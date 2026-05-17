@@ -25,11 +25,11 @@ export const packages: Package[] = [
     slug: "cultural-triangle-explorer",
     tagline: "Uncover Ancient Kingdoms",
     description: "Journey through Sri Lanka's ancient cities — from the rock fortress of Sigiriya to the sacred city of Kandy. Experience UNESCO World Heritage Sites, ancient temples, and the rich cultural tapestry that makes Sri Lanka unique.",
-    image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=800&q=80",
     images: [
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
-      "https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=800&q=80",
-      "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=800&q=80"
+      "https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=800&q=80",
+      "https://images.unsplash.com/photo-1580910528920-58426cd05993?w=800&q=80",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"
     ],
     duration: "7 Days / 6 Nights",
     groupSize: "2-12 People",
@@ -85,10 +85,10 @@ export const packages: Package[] = [
     slug: "hill-country-adventure",
     tagline: "Misty Mountains & Tea Trails",
     description: "Traverse the breathtaking highlands of Sri Lanka. Trek through emerald tea plantations, cross the legendary Nine Arch Bridge, and experience the famous train journey through misty mountain passes.",
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=800&q=80",
     images: [
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80",
-      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80"
+      "https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=800&q=80",
+      "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&q=80"
     ],
     duration: "6 Days / 5 Nights",
     groupSize: "2-10 People",
@@ -173,11 +173,11 @@ export const packages: Package[] = [
     slug: "complete-sri-lanka-discovery",
     tagline: "The Ultimate Journey",
     description: "Experience everything Sri Lanka has to offer in one incredible journey. From ancient ruins to pristine beaches, misty mountains to wildlife safaris — this is the definitive Sri Lankan adventure.",
-    image: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80",
     images: [
-      "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80",
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80"
+      "https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80",
+      "https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=800&q=80",
+      "https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=800&q=80"
     ],
     duration: "14 Days / 13 Nights",
     groupSize: "2-12 People",

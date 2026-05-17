@@ -7,28 +7,52 @@ import { Search, Calendar, Users, ChevronDown, ChevronRight, Play } from 'lucide
 
 const heroSlides = [
   {
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80',
+    image: 'https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=1920&q=85',
     title: 'Discover the Pearl of the Indian Ocean',
-    subtitle: 'Sri Lanka Awaits You',
+    subtitle: 'Sigiriya Rock Fortress',
     location: 'Sigiriya, Sri Lanka',
   },
   {
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=80',
-    title: 'Journey Through Misty Mountains',
+    image: 'https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=1920&q=85',
+    title: 'Journey Through Ella\'s Nine Arch Bridge',
     subtitle: 'Breathtaking Hill Country',
     location: 'Ella, Sri Lanka',
   },
   {
-    image: 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=1920&q=80',
-    title: 'Pristine Tropical Beaches',
-    subtitle: 'Paradise Found',
+    image: 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=1920&q=85',
+    title: 'Pristine Tropical Beaches of Mirissa',
+    subtitle: 'Paradise on the Southern Coast',
     location: 'Mirissa, Sri Lanka',
   },
   {
-    image: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=1920&q=80',
-    title: 'Unforgettable Wildlife Safaris',
-    subtitle: 'Into the Wild',
-    location: 'Yala National Park',
+    image: 'https://images.unsplash.com/photo-1580910528920-58426cd05993?w=1920&q=85',
+    title: 'Sacred Temple of the Tooth Relic',
+    subtitle: 'Ancient Royal Capital',
+    location: 'Kandy, Sri Lanka',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1578469550956-0e16b9c1a5f8?w=1920&q=85',
+    title: 'Historic Galle Fort by the Sea',
+    subtitle: 'UNESCO World Heritage',
+    location: 'Galle, Sri Lanka',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1920&q=85',
+    title: 'Emerald Tea Plantations of Nuwara Eliya',
+    subtitle: 'Little England of Sri Lanka',
+    location: 'Nuwara Eliya, Sri Lanka',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=1920&q=85',
+    title: 'Wild Elephants of Pinnawala',
+    subtitle: 'Nature\'s Greatest Spectacle',
+    location: 'Pinnawala Elephant Orphanage',
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1920&q=85',
+    title: 'Ancient City of Anuradhapura',
+    subtitle: '3000 Years of Living History',
+    location: 'Anuradhapura, Sri Lanka',
   },
 ];
 
