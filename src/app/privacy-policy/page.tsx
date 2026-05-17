@@ -59,7 +59,7 @@ export default function PrivacyPolicyPage() {
               <strong>Good&apos;s Lanka Tours & Travels</strong><br />
               42 Temple Road, Colombo 03, Sri Lanka<br />
               Email: privacy@goodslanka.com<br />
-              Phone: +94 77 123 4567
+              Phone: +94 77 726 6044
             </p>
           </section>
         </div>

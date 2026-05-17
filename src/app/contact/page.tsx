@@ -9,7 +9,7 @@ import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from 'lucide-react';
 
 const contactDetails = [
   { icon: MapPin, label: 'Office Address', value: '42 Temple Road, Colombo 03, Sri Lanka' },
-  { icon: Phone, label: 'Phone', value: '+94 77 123 4567' },
+  { icon: Phone, label: 'Phone', value: '+94 77 726 6044' },
   { icon: Mail, label: 'Email', value: 'info@goodslanka.com' },
   { icon: Clock, label: 'Working Hours', value: 'Mon-Sat: 8AM - 8PM, Sun: 10AM - 5PM' },
 ];
@@ -80,7 +80,7 @@ export default function ContactPage() {
               ))}
 
               {/* WhatsApp CTA */}
-              <a href="https://wa.me/94771234567" target="_blank" rel="noopener noreferrer"
+              <a href="https://wa.me/94777266044" target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-3 p-5 bg-green-500 rounded-2xl text-white hover:bg-green-600 transition-colors">
                 <MessageCircle size={24} />
                 <div>
@@ -201,7 +201,7 @@ export default function ContactPage() {
       </section>
 
       {/* WhatsApp Float */}
-      <a href="https://wa.me/94771234567" target="_blank" rel="noopener noreferrer"
+      <a href="https://wa.me/94777266044" target="_blank" rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-xl hover:bg-green-600 hover:scale-110 transition-all animate-pulse-glow">
         <MessageCircle size={26} className="text-white" />
       </a>

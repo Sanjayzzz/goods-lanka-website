@@ -118,7 +118,7 @@ export default function BookingPage() {
     <main className="pt-24 lg:pt-32">
       {/* Hero */}
       <section className="relative h-48 overflow-hidden">
-        <Image src="https://images.unsplash.com/photo-1540202404-a2f29016b523?w=1600&q=80" alt="Booking" fill className="object-cover" priority />
+        <Image src="https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=1600&q=80" alt="Sigiriya Rock Fortress Sri Lanka" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-ocean-950/75" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
           <h1 className="font-[var(--font-playfair)] text-3xl sm:text-4xl font-bold text-white">Book Your Tour</h1>

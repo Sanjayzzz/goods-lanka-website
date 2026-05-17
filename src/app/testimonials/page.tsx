@@ -13,7 +13,7 @@ export default function TestimonialsPage() {
     <main className="pt-24 lg:pt-32">
       {/* Hero */}
       <section className="relative h-64 sm:h-72 overflow-hidden">
-        <Image src="https://images.unsplash.com/photo-1590068723081-49d13fcb1e07?w=1600&q=80" alt="Testimonials" fill className="object-cover" priority />
+        <Image src="https://images.unsplash.com/photo-1580910528920-58426cd05993?w=1600&q=80" alt="Kandy Temple of the Tooth" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-ocean-950/75" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
           <span className="text-tropical-400 text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Traveler Reviews</span>

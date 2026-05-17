@@ -185,8 +185,8 @@ export default function PackageDetailClient({ pkg }: Props) {
               <div className="bg-gradient-to-br from-ocean-700 to-tropical-600 rounded-3xl p-6 text-white">
                 <h4 className="font-semibold mb-2">Need Help?</h4>
                 <p className="text-white/70 text-sm mb-4">Our travel experts are available 24/7 to help plan your perfect trip.</p>
-                <a href="tel:+94771234567" className="flex items-center gap-2 text-sm font-semibold hover:text-tropical-300 transition-colors">
-                  <Phone size={16} /> +94 77 123 4567
+                <a href="tel:+94777266044" className="flex items-center gap-2 text-sm font-semibold hover:text-tropical-300 transition-colors">
+                  <Phone size={16} /> +94 77 726 6044
                 </a>
               </div>
             </div>

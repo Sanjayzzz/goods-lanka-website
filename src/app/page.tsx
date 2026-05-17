@@ -35,12 +35,12 @@ const whyUs = [
 ];
 
 const galleryImages = [
-  { src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80', alt: 'Sigiriya' },
-  { src: 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400&q=80', alt: 'Beach' },
-  { src: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80', alt: 'Ella' },
-  { src: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=400&q=80', alt: 'Wildlife' },
-  { src: 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=400&q=80', alt: 'Galle' },
-  { src: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&q=80', alt: 'Tea' },
+  { src: 'https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=600&q=80', alt: 'Sigiriya' },
+  { src: 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=400&q=80', alt: 'Mirissa Beach' },
+  { src: 'https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=400&q=80', alt: 'Ella' },
+  { src: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=400&q=80', alt: 'Yala Wildlife' },
+  { src: 'https://images.unsplash.com/photo-1578469550956-0e16b9c1a5f8?w=400&q=80', alt: 'Galle Fort' },
+  { src: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400&q=80', alt: 'Nuwara Eliya Tea' },
 ];
 
 function GalleryPreview() {
@@ -141,7 +141,7 @@ function WhyUsSection() {
           </motion.div>
           <motion.div initial={{ opacity: 0, x: 40 }} animate={isInView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.7, delay: 0.2 }}
             className="relative h-[500px] rounded-3xl overflow-hidden shadow-premium">
-            <Image src="https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=800&q=80" alt="Why choose us" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+            <Image src="https://images.unsplash.com/photo-1580910528920-58426cd05993?w=800&q=80" alt="Kandy Temple of the Tooth Sri Lanka" fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
             <div className="absolute inset-0 bg-gradient-to-t from-ocean-900/60 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6">
               <div className="glass rounded-2xl p-5">
@@ -168,7 +168,7 @@ function WhyUsSection() {
 function CTASection() {
   return (
     <section className="relative py-24 sm:py-32 overflow-hidden">
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1520454974749-611b7248ffdb?w=1600&q=70')] bg-cover bg-center" />
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=70')] bg-cover bg-center" />
       <div className="absolute inset-0 bg-gradient-to-r from-ocean-950/90 via-ocean-900/80 to-tropical-900/70" />
       <div className="relative max-w-4xl mx-auto text-center px-6">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>

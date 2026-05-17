@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Phone, Mail, MapPin, User } from 'lucide-react';
+import { Menu, X, ChevronDown, Phone, Mail, MapPin, User, CalendarCheck, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 
 const navLinks = [
@@ -43,6 +43,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [accountDropdown, setAccountDropdown] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -84,7 +85,7 @@ export default function Navbar() {
       <div className="hidden lg:block bg-ocean-950 text-white/80 text-sm py-2">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-6">
-            <span className="flex items-center gap-1.5"><Phone size={13} /> +94 77 123 4567</span>
+            <span className="flex items-center gap-1.5"><Phone size={13} /> +94 77 726 6044</span>
             <span className="flex items-center gap-1.5"><Mail size={13} /> info@goodslanka.com</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -177,17 +178,50 @@ export default function Navbar() {
 
             {/* CTA + Account + Mobile Toggle */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* My Account */}
+              {/* My Account Dropdown */}
               {userName ? (
-                <Link href="/account/my-bookings"
-                  className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
-                    scrolled ? 'text-ocean-700 hover:bg-ocean-50' : 'text-white/90 hover:bg-white/10'
-                  }`}>
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-tropical-500 to-ocean-600 flex items-center justify-center text-white text-xs font-bold uppercase">
-                    {userName[0]}
-                  </div>
-                  <span className="hidden lg:inline">My Bookings</span>
-                </Link>
+                <div className="relative hidden sm:block">
+                  <button
+                    onClick={() => setAccountDropdown(d => !d)}
+                    onBlur={() => setTimeout(() => setAccountDropdown(false), 150)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                      scrolled ? 'text-ocean-700 hover:bg-ocean-50' : 'text-white/90 hover:bg-white/10'
+                    }`}>
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-tropical-500 to-ocean-600 flex items-center justify-center text-white text-xs font-bold uppercase">
+                      {userName[0]}
+                    </div>
+                    <span className="hidden lg:inline">{userName}</span>
+                    <ChevronDown size={13} className={`transition-transform ${accountDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {accountDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 8 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-1 z-50"
+                      >
+                        <Link href="/account/my-bookings"
+                          className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-ocean-50 hover:text-ocean-700 transition-colors">
+                          <CalendarCheck size={15} /> My Bookings
+                        </Link>
+                        <div className="border-t border-gray-100 my-1" />
+                        <button
+                          onClick={async () => {
+                            const supabase = createClient();
+                            await supabase.auth.signOut();
+                            setUserName(null);
+                            setAccountDropdown(false);
+                            window.location.href = '/';
+                          }}
+                          className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                          <LogOut size={15} /> Sign Out
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               ) : (
                 <Link href="/account/login"
                   className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${

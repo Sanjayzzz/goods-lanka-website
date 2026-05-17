@@ -6,18 +6,22 @@ import Image from 'next/image';
 import { X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 
 const galleryImages = [
-  { src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80', alt: 'Sigiriya Rock Fortress', category: 'Cultural' },
+  { src: 'https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=800&q=80', alt: 'Sigiriya Rock Fortress', category: 'Cultural' },
   { src: 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80', alt: 'Mirissa Beach', category: 'Beach' },
-  { src: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80', alt: 'Ella Valley', category: 'Nature' },
-  { src: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=800&q=80', alt: 'Yala Safari', category: 'Wildlife' },
-  { src: 'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=800&q=80', alt: 'Galle Fort', category: 'Cultural' },
-  { src: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80', alt: 'Tea Plantations', category: 'Nature' },
-  { src: 'https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=800&q=80', alt: 'Kandy Temple', category: 'Cultural' },
+  { src: 'https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=800&q=80', alt: 'Ella Nine Arch Bridge', category: 'Nature' },
+  { src: 'https://images.unsplash.com/photo-1549366021-9f761d450615?w=800&q=80', alt: 'Yala National Park Safari', category: 'Wildlife' },
+  { src: 'https://images.unsplash.com/photo-1578469550956-0e16b9c1a5f8?w=800&q=80', alt: 'Galle Fort', category: 'Cultural' },
+  { src: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&q=80', alt: 'Nuwara Eliya Tea Plantations', category: 'Nature' },
+  { src: 'https://images.unsplash.com/photo-1580910528920-58426cd05993?w=800&q=80', alt: 'Kandy Temple of the Tooth', category: 'Cultural' },
   { src: 'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=800&q=80', alt: 'Arugam Bay', category: 'Beach' },
   { src: 'https://images.unsplash.com/photo-1520454974749-611b7248ffdb?w=800&q=80', alt: 'Bentota Beach', category: 'Beach' },
-  { src: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80', alt: 'Colombo City', category: 'Urban' },
-  { src: 'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800&q=80', alt: 'Elephant', category: 'Wildlife' },
-  { src: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80', alt: 'Sri Lankan Food', category: 'Cultural' },
+  { src: 'https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80', alt: 'Colombo Lotus Tower', category: 'Urban' },
+  { src: 'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800&q=80', alt: 'Pinnawala Elephant Orphanage', category: 'Wildlife' },
+  { src: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80', alt: 'Sri Lankan Cuisine', category: 'Cultural' },
+  { src: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80', alt: 'Anuradhapura Ancient City', category: 'Cultural' },
+  { src: 'https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=800&q=80', alt: 'Sigiriya Gardens', category: 'Cultural' },
+  { src: 'https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=800&q=80', alt: 'Ella Hills', category: 'Nature' },
+  { src: 'https://images.unsplash.com/photo-1578469550956-0e16b9c1a5f8?w=800&q=80', alt: 'Galle Lighthouse', category: 'Cultural' },
 ];
 
 const cats = ['All', 'Beach', 'Cultural', 'Nature', 'Wildlife', 'Urban'];
@@ -35,7 +39,7 @@ export default function GalleryPage() {
     <main className="pt-24 lg:pt-32">
       {/* Hero */}
       <section className="relative h-64 sm:h-80 overflow-hidden">
-        <Image src="https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=1600&q=80" alt="Gallery" fill className="object-cover" priority />
+        <Image src="https://images.unsplash.com/photo-1578469550956-0e16b9c1a5f8?w=1600&q=80" alt="Sri Lanka Gallery" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-ocean-950/70" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
