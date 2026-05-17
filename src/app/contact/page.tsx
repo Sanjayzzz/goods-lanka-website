@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase';
 import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from 'lucide-react';
 
 const contactDetails = [
@@ -16,12 +17,35 @@ const contactDetails = [
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
-    setForm({ name: '', email: '', phone: '', subject: '', message: '' });
-    setTimeout(() => setSent(false), 4000);
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.from('enquiries').insert({
+        name: form.name,
+        email: form.email,
+        phone: form.phone || null,
+        subject: form.subject,
+        message: form.message,
+        status: 'new',
+      });
+      if (error) {
+        setSubmitError(`Failed to send: ${error.message}`);
+      } else {
+        setSent(true);
+        setForm({ name: '', email: '', phone: '', subject: '', message: '' });
+        setTimeout(() => setSent(false), 5000);
+      }
+    } catch (err) {
+      setSubmitError(`Unexpected error: ${String(err)}`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -151,9 +175,14 @@ export default function ContactPage() {
                       rows={5} placeholder="Tell us about your dream Sri Lanka holiday — destinations, dates, budget, group size..."
                       className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 focus:border-transparent text-sm transition-all resize-none" />
                   </div>
-                  <button type="submit"
-                    className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-bold rounded-xl hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
-                    <Send size={18} /> Send Message
+                  {submitError && (
+                    <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+                      {submitError}
+                    </div>
+                  )}
+                  <button type="submit" disabled={submitting}
+                    className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-bold rounded-xl hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                    <Send size={18} /> {submitting ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>
               </div>

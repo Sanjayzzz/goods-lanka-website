@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { packages } from '@/data/packages';
+import { createClient } from '@/lib/supabase';
 import { Check, ChevronRight, Calendar, Users, CreditCard, CheckCircle } from 'lucide-react';
 
 const steps = ['Select Package', 'Travel Details', 'Personal Info', 'Confirmation'];
@@ -16,13 +17,44 @@ export default function BookingPage() {
   const [date, setDate] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', country: '', notes: '' });
   const [booked, setBooked] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const pkg = packages.find(p => p.id === selectedPkg) || packages[0];
   const total = pkg.price * guests;
 
-  const next = () => {
-    if (step < 3) setStep(s => s + 1);
-    else setBooked(true);
+  const next = async () => {
+    if (step < 3) {
+      setStep(s => s + 1);
+    } else {
+      // Final step — save to Supabase
+      setSubmitting(true);
+      setSubmitError('');
+      try {
+        const supabase = createClient();
+        const { error } = await supabase.from('bookings').insert({
+          package_name: pkg.name,
+          travel_date: date || null,
+          guests,
+          full_name: form.name,
+          email: form.email,
+          phone: form.phone,
+          country: form.country,
+          special_requests: form.notes,
+          total_price: total,
+          status: 'pending',
+        });
+        if (error) {
+          setSubmitError(`Failed to save booking: ${error.message}`);
+        } else {
+          setBooked(true);
+        }
+      } catch (err) {
+        setSubmitError(`Unexpected error: ${String(err)}`);
+      } finally {
+        setSubmitting(false);
+      }
+    }
   };
   const prev = () => setStep(s => Math.max(0, s - 1));
 
@@ -198,15 +230,20 @@ export default function BookingPage() {
                 )}
 
                 {/* Navigation */}
-                <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
+                {submitError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+                    {submitError}
+                  </div>
+                )}
+                <div className="flex justify-between mt-4 pt-6 border-t border-gray-100">
                   {step > 0 ? (
-                    <button onClick={prev} className="px-6 py-3 border border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition-colors">
+                    <button onClick={prev} disabled={submitting} className="px-6 py-3 border border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50">
                       ← Back
                     </button>
                   ) : <div />}
-                  <button onClick={next}
-                    className="px-8 py-3 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all flex items-center gap-2">
-                    {step === 3 ? 'Confirm Booking' : 'Continue'} <ChevronRight size={18} />
+                  <button onClick={next} disabled={submitting}
+                    className="px-8 py-3 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                    {submitting ? 'Saving...' : step === 3 ? 'Confirm Booking' : 'Continue'} {!submitting && <ChevronRight size={18} />}
                   </button>
                 </div>
               </div>
