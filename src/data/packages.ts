@@ -173,9 +173,9 @@ export const packages: Package[] = [
     slug: "complete-sri-lanka-discovery",
     tagline: "The Ultimate Journey",
     description: "Experience everything Sri Lanka has to offer in one incredible journey. From ancient ruins to pristine beaches, misty mountains to wildlife safaris — this is the definitive Sri Lankan adventure.",
-    image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=800&q=80",
     images: [
-      "https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80",
+      "https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=800&q=80",
       "https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80",
       "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80"
     ],

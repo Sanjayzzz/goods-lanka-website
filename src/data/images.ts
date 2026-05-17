@@ -40,8 +40,8 @@ export const IMAGES = {
   wildlife: 'https://images.unsplash.com/photo-1533484482814-3fe2d922be89?w=800&q=80',
 
   // Colombo
-  colombo: 'https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80',
-  colomboLg: 'https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=1600&q=80',
+  colombo: 'https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=800&q=80',
+  colomboLg: 'https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=1600&q=80',
 
   // Nature / Landscape (Ella hills)
   nature1: 'https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80',

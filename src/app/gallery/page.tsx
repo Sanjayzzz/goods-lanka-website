@@ -14,7 +14,7 @@ const galleryImages = [
   { src: 'https://images.unsplash.com/photo-1559038300-07cb5d6c3d27?w=800&q=80', alt: 'Nuwara Eliya Tea Plantations', category: 'Nature' },
   { src: 'https://images.unsplash.com/photo-1665849050332-8d5d7e59afb6?w=800&q=80', alt: 'Kandy Temple of the Tooth', category: 'Cultural' },
   { src: 'https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80', alt: 'Arugam Bay Beach', category: 'Beach' },
-  { src: 'https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80', alt: 'Colombo City Lotus Tower', category: 'Urban' },
+  { src: 'https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=800&q=80', alt: 'Colombo City Lotus Tower', category: 'Urban' },
   { src: 'https://images.unsplash.com/photo-1621393614326-2f9ed389ce02?w=800&q=80', alt: 'Anuradhapura Ancient City', category: 'Cultural' },
   { src: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80', alt: 'Sri Lankan Cuisine', category: 'Cultural' },
   { src: 'https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80', alt: 'Sigiriya Gardens', category: 'Cultural' },

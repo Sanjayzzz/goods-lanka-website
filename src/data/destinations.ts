@@ -126,7 +126,7 @@ export const destinations: Destination[] = [
     slug: "colombo",
     tagline: "Vibrant Capital",
     description: "Sri Lanka's dynamic capital blends modern luxury with colonial heritage — world-class dining, shopping, and a vibrant nightlife scene await.",
-    image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=800&q=80",
     rating: 4.5,
     reviewCount: 3456,
     highlights: ["Gangaramaya Temple", "Galle Face Green", "Fine Dining", "Shopping"],
