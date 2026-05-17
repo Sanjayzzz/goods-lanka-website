@@ -15,7 +15,7 @@ export default function BlogPage() {
     <main className="pt-24 lg:pt-32">
       {/* Hero */}
       <section className="relative h-64 sm:h-80 overflow-hidden">
-        <Image src="https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=1600&q=80" alt="Sri Lanka Blog" fill className="object-cover" priority />
+        <Image src="https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=1600&q=80" alt="Ella Nine Arch Bridge Sri Lanka" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-ocean-950/70" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
           <span className="text-tropical-400 text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Travel Inspiration</span>

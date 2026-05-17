@@ -19,7 +19,7 @@ export default function FAQPage() {
     <main className="pt-24 lg:pt-32">
       {/* Hero */}
       <section className="relative h-64 sm:h-72 overflow-hidden">
-        <Image src="https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1600&q=80" alt="Nuwara Eliya Tea Plantations" fill className="object-cover" priority />
+        <Image src="https://images.unsplash.com/photo-1559038300-07cb5d6c3d27?w=1600&q=80" alt="Nuwara Eliya Tea Plantations Sri Lanka" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-ocean-950/75" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
           <span className="text-tropical-400 text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Got Questions?</span>

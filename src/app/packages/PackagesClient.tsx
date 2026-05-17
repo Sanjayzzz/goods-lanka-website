@@ -79,7 +79,7 @@ export default function PackagesClient() {
     <main className="pt-24 lg:pt-32">
       {/* Hero */}
       <section className="relative h-72 sm:h-96 overflow-hidden">
-        <Image src="https://images.unsplash.com/photo-1578469550956-0e16b9c1a5f8?w=1600&q=80" alt="Galle Fort Sri Lanka" fill className="object-cover" priority />
+        <Image src="https://images.unsplash.com/photo-1704797390682-76479a29dc9a?w=1600&q=80" alt="Galle Fort Sri Lanka" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-gradient-to-b from-ocean-950/70 via-ocean-900/50 to-ocean-950/80" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>

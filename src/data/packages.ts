@@ -25,11 +25,11 @@ export const packages: Package[] = [
     slug: "cultural-triangle-explorer",
     tagline: "Uncover Ancient Kingdoms",
     description: "Journey through Sri Lanka's ancient cities — from the rock fortress of Sigiriya to the sacred city of Kandy. Experience UNESCO World Heritage Sites, ancient temples, and the rich cultural tapestry that makes Sri Lanka unique.",
-    image: "https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80",
     images: [
-      "https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=800&q=80",
-      "https://images.unsplash.com/photo-1580910528920-58426cd05993?w=800&q=80",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"
+      "https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80",
+      "https://images.unsplash.com/photo-1665849050332-8d5d7e59afb6?w=800&q=80",
+      "https://images.unsplash.com/photo-1621393614326-2f9ed389ce02?w=800&q=80"
     ],
     duration: "7 Days / 6 Nights",
     groupSize: "2-12 People",
@@ -56,11 +56,11 @@ export const packages: Package[] = [
     slug: "tropical-beach-escape",
     tagline: "Sun, Sand & Serenity",
     description: "Relax on Sri Lanka's most pristine beaches. From the whale-watching paradise of Mirissa to the colonial charm of Galle, this coastal journey combines luxury relaxation with thrilling ocean adventures.",
-    image: "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80",
     images: [
+      "https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80",
       "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80",
-      "https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=800&q=80",
-      "https://images.unsplash.com/photo-1520454974749-611b7248ffdb?w=800&q=80"
+      "https://images.unsplash.com/photo-1704797390682-76479a29dc9a?w=800&q=80"
     ],
     duration: "5 Days / 4 Nights",
     groupSize: "2-8 People",
@@ -85,10 +85,10 @@ export const packages: Package[] = [
     slug: "hill-country-adventure",
     tagline: "Misty Mountains & Tea Trails",
     description: "Traverse the breathtaking highlands of Sri Lanka. Trek through emerald tea plantations, cross the legendary Nine Arch Bridge, and experience the famous train journey through misty mountain passes.",
-    image: "https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80",
     images: [
-      "https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=800&q=80",
-      "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=800&q=80"
+      "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80",
+      "https://images.unsplash.com/photo-1559038300-07cb5d6c3d27?w=800&q=80"
     ],
     duration: "6 Days / 5 Nights",
     groupSize: "2-10 People",
@@ -114,10 +114,10 @@ export const packages: Package[] = [
     slug: "wildlife-safari-expedition",
     tagline: "Into the Wild",
     description: "Embark on an extraordinary wildlife adventure. Track leopards in Yala, observe elephants in Udawalawe, and discover exotic birdlife — Sri Lanka's wilderness will leave you speechless.",
-    image: "https://images.unsplash.com/photo-1549366021-9f761d450615?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1533484482814-3fe2d922be89?w=800&q=80",
     images: [
-      "https://images.unsplash.com/photo-1549366021-9f761d450615?w=800&q=80",
-      "https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=800&q=80"
+      "https://images.unsplash.com/photo-1533484482814-3fe2d922be89?w=800&q=80",
+      "https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80"
     ],
     duration: "5 Days / 4 Nights",
     groupSize: "2-6 People",
@@ -142,9 +142,9 @@ export const packages: Package[] = [
     slug: "luxury-honeymoon-retreat",
     tagline: "Romance in Paradise",
     description: "Celebrate love in the most romantic settings Sri Lanka has to offer. Private villas, candlelit dinners on the beach, couples' spa treatments, and sunset cruises — pure tropical romance.",
-    image: "https://images.unsplash.com/photo-1520454974749-611b7248ffdb?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80",
     images: [
-      "https://images.unsplash.com/photo-1520454974749-611b7248ffdb?w=800&q=80",
+      "https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80",
       "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80"
     ],
     duration: "8 Days / 7 Nights",
@@ -176,8 +176,8 @@ export const packages: Package[] = [
     image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80",
     images: [
       "https://images.unsplash.com/photo-1567157577867-05ccb1388e13?w=800&q=80",
-      "https://images.unsplash.com/photo-1588428895011-9a25e12f57da?w=800&q=80",
-      "https://images.unsplash.com/photo-1566766189268-8715c0de655b?w=800&q=80"
+      "https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80",
+      "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80"
     ],
     duration: "14 Days / 13 Nights",
     groupSize: "2-12 People",
