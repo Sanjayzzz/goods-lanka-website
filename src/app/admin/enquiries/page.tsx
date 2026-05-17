@@ -31,14 +31,17 @@ export default function EnquiriesPage() {
   const [selected, setSelected] = useState<Enquiry | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = async () => {
+    setRefreshing(true);
     const supabase = createClient();
     const { data } = await supabase.from('enquiries').select('*').order('created_at', { ascending: false });
     setEnquiries(data ?? []);
     setFiltered(data ?? []);
     setLastUpdated(new Date());
     setLoading(false);
+    setRefreshing(false);
   };
 
   useEffect(() => { load(); }, []);
@@ -82,9 +85,9 @@ export default function EnquiriesPage() {
           {lastUpdated && <span className="ml-2 text-gray-400">· Updated {lastUpdated.toLocaleTimeString()}</span>}
         </p>
       </div>
-      <button onClick={load}
-        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-ocean-300 transition-all shadow-sm">
-        <RefreshCw size={15} /> Refresh
+      <button onClick={load} disabled={refreshing}
+        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-ocean-300 transition-all shadow-sm disabled:opacity-60">
+        <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Refreshing...' : 'Refresh'}
       </button>
 
       <div className="flex flex-col sm:flex-row gap-3">
