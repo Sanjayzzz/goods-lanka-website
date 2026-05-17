@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
-import { Search, Filter, Eye, ChevronDown } from 'lucide-react';
+import { Search, Eye, ChevronDown, RefreshCw } from 'lucide-react';
 
 interface Booking {
   id: string;
@@ -34,12 +34,14 @@ export default function BookingsPage() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Booking | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const load = async () => {
     const supabase = createClient();
     const { data } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
     setBookings(data ?? []);
     setFiltered(data ?? []);
+    setLastUpdated(new Date());
     setLoading(false);
   };
 
@@ -76,8 +78,14 @@ export default function BookingsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Bookings</h2>
-          <p className="text-gray-500 text-sm">{filtered.length} of {bookings.length} bookings</p>
+          <p className="text-gray-500 text-sm">{filtered.length} of {bookings.length} bookings
+            {lastUpdated && <span className="ml-2 text-gray-400">· Updated {lastUpdated.toLocaleTimeString()}</span>}
+          </p>
         </div>
+        <button onClick={load}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-ocean-300 transition-all shadow-sm">
+          <RefreshCw size={15} /> Refresh
+        </button>
       </div>
 
       {/* Filters */}

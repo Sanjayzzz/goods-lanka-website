@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,9 +19,37 @@ export default function BookingPage() {
   const [booked, setBooked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = '/account/login?redirect=/booking';
+        return;
+      }
+      setUserId(user.id);
+      // Pre-fill name and email from account
+      setForm(f => ({
+        ...f,
+        name: user.user_metadata?.full_name ?? '',
+        email: user.email ?? '',
+      }));
+      setAuthChecking(false);
+    };
+    checkAuth();
+  }, []);
 
   const pkg = packages.find(p => p.id === selectedPkg) || packages[0];
   const total = pkg.price * guests;
+
+  if (authChecking) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-ocean-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   const next = async () => {
     if (step < 3) {
@@ -43,6 +71,7 @@ export default function BookingPage() {
           special_requests: form.notes,
           total_price: total,
           status: 'pending',
+          user_id: userId,
         });
         if (error) {
           setSubmitError(`Failed to save booking: ${error.message}`);
@@ -73,9 +102,14 @@ export default function BookingPage() {
           <div className="flex justify-between text-sm"><span className="text-gray-400">Travel Date</span><span className="font-medium text-ocean-900">{date || 'TBD'}</span></div>
           <div className="flex justify-between font-bold border-t border-gray-200 pt-2"><span className="text-gray-700">Total</span><span className="text-ocean-900">${total.toLocaleString()}</span></div>
         </div>
-        <Link href="/" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-full hover:scale-105 transition-all">
-          Back to Home
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/account/my-bookings" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-full hover:scale-105 transition-all">
+            View My Bookings →
+          </Link>
+          <Link href="/" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-full hover:bg-gray-200 transition-all">
+            Back to Home
+          </Link>
+        </div>
       </motion.div>
     </main>
   );

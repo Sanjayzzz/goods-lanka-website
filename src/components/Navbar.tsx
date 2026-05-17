@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Phone, Mail, MapPin } from 'lucide-react';
+import { Menu, X, ChevronDown, Phone, Mail, MapPin, User } from 'lucide-react';
+import { createClient } from '@/lib/supabase';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -41,6 +42,20 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(!isHome);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserName(user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Account');
+      else setUserName(null);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
+      const u = session?.user;
+      setUserName(u ? (u.user_metadata?.full_name ?? u.email?.split('@')[0] ?? 'Account') : null);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -160,8 +175,27 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* CTA + Mobile Toggle */}
+            {/* CTA + Account + Mobile Toggle */}
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* My Account */}
+              {userName ? (
+                <Link href="/account/my-bookings"
+                  className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                    scrolled ? 'text-ocean-700 hover:bg-ocean-50' : 'text-white/90 hover:bg-white/10'
+                  }`}>
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-tropical-500 to-ocean-600 flex items-center justify-center text-white text-xs font-bold uppercase">
+                    {userName[0]}
+                  </div>
+                  <span className="hidden lg:inline">My Bookings</span>
+                </Link>
+              ) : (
+                <Link href="/account/login"
+                  className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                    scrolled ? 'text-ocean-700 hover:bg-ocean-50' : 'text-white/90 hover:bg-white/10'
+                  }`}>
+                  <User size={15} /> Sign In
+                </Link>
+              )}
               <Link
                 href="/booking"
                 className="hidden sm:inline-flex px-5 py-2.5 bg-gradient-to-r from-sunset-500 to-coral-500 text-white text-sm font-semibold rounded-full hover:shadow-lg hover:shadow-sunset-500/30 transition-all duration-300 hover:scale-105"
