@@ -168,8 +168,8 @@ export default function Footer() {
         </div>
         <div className="max-w-7xl mx-auto px-6 pb-4 text-center text-xs text-white/25">
           Designed &amp; Developed by{' '}
-          <a href="mailto:sanjayroot1122@gmail.com" className="text-tropical-400/70 hover:text-tropical-400 transition-colors">
-            sanjayroot1122@gmail.com
+          <a href="mailto:sanjayroot1122@gmail.com" className="text-tropical-400/70 hover:text-tropical-400 transition-colors font-medium">
+            Nexify Digital
           </a>
         </div>
       </div>
