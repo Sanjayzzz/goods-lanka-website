@@ -159,12 +159,18 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-white/40">
-          <p>© {new Date().getFullYear()} Good&apos;s Lanka Tours & Travels. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Good&apos;s Lanka Tours &amp; Travels. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>
             <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 pb-4 text-center text-xs text-white/25">
+          Designed &amp; Developed by{' '}
+          <a href="mailto:sanjayroot1122@gmail.com" className="text-tropical-400/70 hover:text-tropical-400 transition-colors">
+            sanjayroot1122@gmail.com
+          </a>
         </div>
       </div>
     </footer>
