@@ -14,7 +14,7 @@ const allNavItems = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['super_admin', 'client_admin'] },
   { href: '/admin/bookings', label: 'Bookings', icon: CalendarCheck, roles: ['super_admin', 'client_admin'] },
   { href: '/admin/enquiries', label: 'Enquiries', icon: MessageSquare, roles: ['super_admin', 'client_admin'] },
-  { href: '/admin/packages', label: 'Packages & Pricing', icon: Package, roles: ['super_admin', 'client_admin'] },
+  { href: '/admin/packages', label: 'Destinations & Pricing', icon: Package, roles: ['super_admin', 'client_admin'] },
   { href: '/admin/users', label: 'User Management', icon: Users, roles: ['super_admin'] },
 ];
 

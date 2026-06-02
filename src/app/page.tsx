@@ -8,11 +8,9 @@ import HeroSection from '@/components/HeroSection';
 import SectionHeading from '@/components/SectionHeading';
 import DestinationCard from '@/components/DestinationCard';
 import DestinationModal from '@/components/DestinationModal';
-import PackageCard from '@/components/PackageCard';
 import TestimonialCarousel from '@/components/TestimonialCarousel';
 import StatsSection from '@/components/StatsSection';
 import { destinations, Destination } from '@/data/destinations';
-import { packages } from '@/data/packages';
 import { blogPosts } from '@/data/blog';
 import { createClient } from '@/lib/supabase';
 import {
@@ -21,12 +19,12 @@ import {
 } from 'lucide-react';
 
 const categories = [
-  { icon: Waves, label: 'Beach & Coastal', count: 8, color: 'from-blue-400 to-ocean-500', href: '/packages?cat=Beach' },
-  { icon: Mountain, label: 'Hill & Mountains', count: 6, color: 'from-tropical-400 to-tropical-700', href: '/packages?cat=Adventure' },
-  { icon: Binoculars, label: 'Wildlife Safari', count: 5, color: 'from-sunset-400 to-coral-600', href: '/packages?cat=Wildlife' },
-  { icon: Camera, label: 'Cultural Tours', count: 7, color: 'from-purple-400 to-indigo-600', href: '/packages?cat=Cultural' },
-  { icon: TreePine, label: 'Eco & Nature', count: 4, color: 'from-green-400 to-tropical-600', href: '/packages?cat=Adventure' },
-  { icon: Compass, label: 'Luxury Retreat', count: 3, color: 'from-amber-400 to-sunset-600', href: '/packages?cat=Luxury' },
+  { icon: Waves, label: 'Beach & Coastal', count: 8, color: 'from-blue-400 to-ocean-500', href: '/destinations?cat=Beach' },
+  { icon: Mountain, label: 'Hill & Mountains', count: 6, color: 'from-tropical-400 to-tropical-700', href: '/destinations?cat=Nature' },
+  { icon: Binoculars, label: 'Wildlife Safari', count: 5, color: 'from-sunset-400 to-coral-600', href: '/destinations?cat=Wildlife' },
+  { icon: Camera, label: 'Cultural Tours', count: 7, color: 'from-purple-400 to-indigo-600', href: '/destinations?cat=Cultural' },
+  { icon: TreePine, label: 'Eco & Nature', count: 4, color: 'from-green-400 to-tropical-600', href: '/destinations?cat=Nature' },
+  { icon: Compass, label: 'Luxury Retreat', count: 3, color: 'from-amber-400 to-sunset-600', href: '/destinations?cat=Cultural' },
 ];
 
 const whyUs = [
@@ -220,26 +218,10 @@ function NewsletterSection() {
 
 export default function HomePage() {
   const [selectedDest, setSelectedDest] = useState<Destination | null>(null);
-  const [livePackages, setLivePackages] = useState(packages);
   const [liveDestinations, setLiveDestinations] = useState(destinations);
 
   useEffect(() => {
     const supabase = createClient();
-    
-    // Load packages
-    supabase.from('packages').select('slug, price, active').then(({ data }) => {
-      if (data) {
-        const liveMap = new Map(data.map(p => [p.slug, p]));
-        setLivePackages(packages.filter(p => {
-          const live = liveMap.get(p.slug);
-          return !live || live.active;
-        }).map(p => {
-          const live = liveMap.get(p.slug);
-          if (live) return { ...p, price: Number(live.price) };
-          return p;
-        }));
-      }
-    });
 
     // Load destinations
     supabase.from('destinations').select('slug, price, active').then(({ data }) => {
@@ -298,21 +280,6 @@ export default function HomePage() {
           <div className="text-center">
             <Link href="/destinations" className="inline-flex items-center gap-2 px-8 py-4 border-2 border-ocean-700 text-ocean-700 font-semibold rounded-full hover:bg-ocean-700 hover:text-white transition-all duration-300 hover:scale-105">
               View All Destinations <ArrowRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Packages */}
-      <section className="py-20 sm:py-28 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <SectionHeading subtitle="Tour Packages" title="Most Popular Tours" description="Hand-crafted itineraries designed to give you the ultimate Sri Lankan experience." />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
-            {livePackages.slice(0, 6).map((pkg, i) => <PackageCard key={pkg.id} pkg={pkg} index={i} />)}
-          </div>
-          <div className="text-center">
-            <Link href="/packages" className="inline-flex items-center gap-2 px-8 py-4 border-2 border-ocean-700 text-ocean-700 font-semibold rounded-full hover:bg-ocean-700 hover:text-white transition-all duration-300 hover:scale-105">
-              View All Packages <ArrowRight size={18} />
             </Link>
           </div>
         </div>

@@ -4,17 +4,20 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { packages } from '@/data/packages';
+import { destinations, Destination } from '@/data/destinations';
 import { createClient } from '@/lib/supabase';
-import { Check, ChevronRight, Calendar, Users, CreditCard, CheckCircle } from 'lucide-react';
+import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle } from 'lucide-react';
 
-const steps = ['Select Package', 'Travel Details', 'Personal Info', 'Confirmation'];
+const steps = ['Select Tour', 'Travel Details', 'Personal Info', 'Confirmation'];
 
 export default function BookingPage() {
   const [step, setStep] = useState(0);
-  const [livePackages, setLivePackages] = useState(packages);
-  const [selectedPkg, setSelectedPkg] = useState(packages[0].id);
+  const [liveDestinations, setLiveDestinations] = useState<Destination[]>(
+    destinations.map(d => ({ ...d, price: d.price ?? 99 }))
+  );
+  const [selectedDestId, setSelectedDestId] = useState<string>(destinations[0].id);
   const [guests, setGuests] = useState(2);
+  const [durationDays, setDurationDays] = useState(5);
   const [date, setDate] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', country: '', notes: '' });
   const [booked, setBooked] = useState(false);
@@ -28,7 +31,7 @@ export default function BookingPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        window.location.href = '/account/login?redirect=/booking';
+        window.location.href = `/account/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
         return;
       }
       setUserId(user.id);
@@ -40,33 +43,35 @@ export default function BookingPage() {
       }));
       setAuthChecking(false);
 
-      // Load live packages
-      const { data: pkgs } = await supabase.from('packages').select('id, name, slug, price, original_price, active');
-      if (pkgs) {
-        const liveMap = new Map(pkgs.map(p => [p.slug, p]));
-        const updatedPkgs = packages.filter(p => {
-          const live = liveMap.get(p.slug);
+      // Load live destinations and merge with static details
+      const { data: dbDests } = await supabase.from('destinations').select('id, name, slug, price, active');
+      if (dbDests) {
+        const liveMap = new Map(dbDests.map(d => [d.slug, d]));
+        const updatedDests = destinations.filter(d => {
+          const live = liveMap.get(d.slug);
           return !live || live.active;
-        }).map(p => {
-          const live = liveMap.get(p.slug);
+        }).map(d => {
+          const live = liveMap.get(d.slug);
           if (live) {
             return {
-              ...p,
+              ...d,
               id: live.id,
-              price: Number(live.price),
-              originalPrice: Number(live.original_price ?? live.price),
+              price: Number(live.price) || 99,
             };
           }
-          return p;
+          return { ...d, price: d.price ?? 99 };
         });
-        setLivePackages(updatedPkgs);
+        setLiveDestinations(updatedDests);
         
-        // Auto-update selectedPkg if it matches the static one but needs db UUID
-        const currentPkg = packages.find(p => p.id === selectedPkg);
-        if (currentPkg) {
-          const matchingLive = updatedPkgs.find(p => p.slug === currentPkg.slug);
-          if (matchingLive) {
-            setSelectedPkg(matchingLive.id);
+        // Auto-select destination from query param
+        const params = new URLSearchParams(window.location.search);
+        const destParam = params.get('destination');
+        if (destParam) {
+          const found = updatedDests.find(
+            d => d.name.toLowerCase() === destParam.toLowerCase() || d.slug.toLowerCase() === destParam.toLowerCase()
+          );
+          if (found) {
+            setSelectedDestId(found.id);
           }
         }
       }
@@ -74,11 +79,12 @@ export default function BookingPage() {
     checkAuth();
   }, []);
 
-  const pkg = livePackages.find(p => p.id === selectedPkg) || livePackages[0];
-  const total = pkg.price * guests;
+  const dest = liveDestinations.find(d => d.id === selectedDestId) || liveDestinations[0];
+  const basePrice = dest?.price ?? 99;
+  const total = basePrice * durationDays * guests;
 
   if (authChecking) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-8 h-8 border-4 border-ocean-600 border-t-transparent rounded-full animate-spin" />
     </div>
   );
@@ -92,15 +98,16 @@ export default function BookingPage() {
       setSubmitError('');
       try {
         const supabase = createClient();
+        const formattedNotes = `Duration: ${durationDays} days\nBase Price/day/person: $${basePrice}\n\nNotes:\n${form.notes}`;
         const { error } = await supabase.from('bookings').insert({
-          package_name: pkg.name,
+          package_name: `${dest.name} Tour`,
           travel_date: date || null,
           guests,
           full_name: form.name,
           email: form.email,
           phone: form.phone,
           country: form.country,
-          special_requests: form.notes,
+          special_requests: formattedNotes,
           total_price: total,
           status: 'pending',
           user_id: userId,
@@ -120,19 +127,20 @@ export default function BookingPage() {
   const prev = () => setStep(s => Math.max(0, s - 1));
 
   if (booked) return (
-    <main className="pt-24 lg:pt-32 min-h-screen flex items-center justify-center px-6">
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-lg w-full text-center py-16">
+    <main className="pt-24 lg:pt-32 min-h-screen flex items-center justify-center px-6 bg-gray-50">
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="max-w-lg w-full text-center py-16 bg-white p-8 rounded-3xl shadow-premium">
         <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
           <CheckCircle size={48} className="text-green-500" />
         </div>
-        <h1 className="font-[var(--font-playfair)] text-3xl font-bold text-ocean-900 mb-3">Booking Confirmed!</h1>
+        <h1 className="font-[var(--font-playfair)] text-3xl font-bold text-ocean-900 mb-3">Tour Booked!</h1>
         <p className="text-gray-400 mb-2">Thank you, {form.name || 'Traveler'}!</p>
-        <p className="text-gray-400 text-sm mb-8">We&apos;ve received your booking for <strong>{pkg.name}</strong>. Our team will contact you within 24 hours to confirm your reservation.</p>
+        <p className="text-gray-400 text-sm mb-8">We&apos;ve received your request for the <strong>{dest.name} Tour</strong>. Our team will contact you within 24 hours to coordinate your custom itinerary.</p>
         <div className="p-6 bg-ocean-50 rounded-2xl text-left mb-8 space-y-2">
-          <div className="flex justify-between text-sm"><span className="text-gray-400">Package</span><span className="font-medium text-ocean-900">{pkg.name}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-400">Destination</span><span className="font-medium text-ocean-900">{dest.name}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-400">Duration</span><span className="font-medium text-ocean-900">{durationDays} Days</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Guests</span><span className="font-medium text-ocean-900">{guests}</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Travel Date</span><span className="font-medium text-ocean-900">{date || 'TBD'}</span></div>
-          <div className="flex justify-between font-bold border-t border-gray-200 pt-2"><span className="text-gray-700">Total</span><span className="text-ocean-900">${total.toLocaleString()}</span></div>
+          <div className="flex justify-between font-bold border-t border-gray-200 pt-2"><span className="text-gray-700">Total Est. Price</span><span className="text-ocean-900">${total.toLocaleString()}</span></div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/account/my-bookings" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-full hover:scale-105 transition-all">
@@ -147,7 +155,7 @@ export default function BookingPage() {
   );
 
   return (
-    <main className="pt-24 lg:pt-32">
+    <main className="pt-24 lg:pt-32 bg-gray-50/50 min-h-screen">
       {/* Hero */}
       <section className="relative h-48 overflow-hidden">
         <Image src="https://images.unsplash.com/photo-1612862862126-865765df2ded?w=1600&q=80" alt="Sigiriya Rock Fortress Sri Lanka" fill className="object-cover" priority />
@@ -179,23 +187,23 @@ export default function BookingPage() {
               <div className="bg-white rounded-3xl shadow-premium p-8">
                 {step === 0 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                    <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Choose a Package</h2>
-                    <div className="space-y-3">
-                      {livePackages.map(p => (
-                        <label key={p.id} className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPkg === p.id ? 'border-tropical-500 bg-tropical-50' : 'border-gray-100 hover:border-gray-200'}`}>
-                          <input type="radio" name="package" value={p.id} checked={selectedPkg === p.id} onChange={() => setSelectedPkg(p.id)} className="hidden" />
+                    <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Choose a Tour Destination</h2>
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 no-scrollbar">
+                      {liveDestinations.map(d => (
+                        <label key={d.id} className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedDestId === d.id ? 'border-tropical-500 bg-tropical-50' : 'border-gray-100 hover:border-gray-200'}`}>
+                          <input type="radio" name="destination" value={d.id} checked={selectedDestId === d.id} onChange={() => setSelectedDestId(d.id)} className="hidden" />
                           <div className="relative w-16 h-12 rounded-xl overflow-hidden shrink-0">
-                            <Image src={p.image} alt={p.name} fill className="object-cover" sizes="64px" />
+                            <Image src={d.image} alt={d.name} fill className="object-cover" sizes="64px" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-ocean-900 text-sm truncate">{p.name}</p>
-                            <p className="text-gray-400 text-xs">{p.duration} • {p.category}</p>
+                            <p className="font-semibold text-ocean-900 text-sm truncate">{d.name}</p>
+                            <p className="text-gray-400 text-xs">{d.category} • Customizable</p>
                           </div>
                           <div className="text-right shrink-0">
-                            <p className="font-bold text-ocean-900">${p.price}</p>
-                            <p className="text-gray-400 text-xs">/ person</p>
+                            <p className="font-bold text-ocean-900">${d.price || 99}</p>
+                            <p className="text-gray-400 text-xs">/ person / day</p>
                           </div>
-                          {selectedPkg === p.id && <Check size={18} className="text-tropical-500 shrink-0" />}
+                          {selectedDestId === d.id && <Check size={18} className="text-tropical-500 shrink-0" />}
                         </label>
                       ))}
                     </div>
@@ -205,13 +213,23 @@ export default function BookingPage() {
                 {step === 1 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Travel Details</h2>
-                    <div className="space-y-5">
+                    <div className="space-y-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Travel Date *</label>
                         <div className="relative">
                           <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                           <input type="date" value={date} onChange={e => setDate(e.target.value)} required min={new Date().toISOString().split('T')[0]}
                             className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Number of Days *</label>
+                        <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl">
+                          <Clock size={18} className="text-tropical-500" />
+                          <button onClick={() => setDurationDays(d => Math.max(1, d - 1))} className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold transition-colors">−</button>
+                          <span className="font-bold text-ocean-900 text-xl w-10 text-center">{durationDays}</span>
+                          <button onClick={() => setDurationDays(d => d + 1)} className="w-9 h-9 rounded-full bg-tropical-100 hover:bg-tropical-200 flex items-center justify-center font-bold text-tropical-700 transition-colors">+</button>
+                          <span className="text-gray-400 text-sm">{durationDays > 1 ? 'days' : 'day'}</span>
                         </div>
                       </div>
                       <div>
@@ -271,8 +289,8 @@ export default function BookingPage() {
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Review & Confirm</h2>
                     <div className="space-y-4 mb-8">
                       {[
-                        { label: 'Package', value: pkg.name },
-                        { label: 'Duration', value: pkg.duration },
+                        { label: 'Destination Tour', value: dest.name },
+                        { label: 'Duration', value: `${durationDays} Days` },
                         { label: 'Travel Date', value: date || 'Not set' },
                         { label: 'Guests', value: guests.toString() },
                         { label: 'Name', value: form.name || 'Not set' },
@@ -284,7 +302,7 @@ export default function BookingPage() {
                         </div>
                       ))}
                       <div className="flex justify-between py-3 font-bold text-base">
-                        <span className="text-gray-700">Total Amount</span>
+                        <span className="text-gray-700">Total Est. Price</span>
                         <span className="text-ocean-900 text-xl">${total.toLocaleString()}</span>
                       </div>
                     </div>
@@ -318,14 +336,14 @@ export default function BookingPage() {
             {/* Summary Sidebar */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-3xl shadow-premium p-6 sticky top-28">
-                <h3 className="font-semibold text-ocean-900 mb-4">Booking Summary</h3>
+                <h3 className="font-semibold text-ocean-900 mb-4">Tour Summary</h3>
                 <div className="relative h-40 rounded-2xl overflow-hidden mb-4">
-                  <Image src={pkg.image} alt={pkg.name} fill className="object-cover" sizes="300px" />
+                  <Image src={dest.image} alt={dest.name} fill className="object-cover" sizes="300px" />
                 </div>
-                <h4 className="font-[var(--font-playfair)] font-bold text-ocean-900 mb-1">{pkg.name}</h4>
-                <p className="text-gray-400 text-xs mb-4">{pkg.duration} • {pkg.category}</p>
+                <h4 className="font-[var(--font-playfair)] font-bold text-ocean-900 mb-1">{dest.name} Tour</h4>
+                <p className="text-gray-400 text-xs mb-4">{dest.category} • Customizable</p>
                 <div className="space-y-2 text-sm border-t border-gray-100 pt-4">
-                  <div className="flex justify-between"><span className="text-gray-400">${pkg.price} × {guests} guests</span><span>${(pkg.price * guests).toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span className="text-gray-400">${basePrice} × {durationDays} days × {guests} guests</span><span>${total.toLocaleString()}</span></div>
                   {date && <div className="flex justify-between"><span className="text-gray-400">Date</span><span className="font-medium">{date}</span></div>}
                   <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-100">
                     <span>Total</span><span className="text-ocean-900">${total.toLocaleString()}</span>

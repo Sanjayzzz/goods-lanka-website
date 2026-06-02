@@ -123,10 +123,10 @@ export default function HeroSection() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
               <Link
-                href="/packages"
+                href="/destinations"
                 className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-sunset-500 to-coral-500 text-white font-semibold rounded-full hover:shadow-xl hover:shadow-sunset-500/30 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
               >
-                Explore Packages <ChevronRight size={18} />
+                Explore Destinations <ChevronRight size={18} />
               </Link>
               <button
                 onClick={() => setSearchOpen(!searchOpen)}

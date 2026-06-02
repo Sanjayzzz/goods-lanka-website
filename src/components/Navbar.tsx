@@ -20,16 +20,6 @@ const navLinks = [
       { name: 'Galle', href: '/destinations#galle' },
     ]
   },
-  {
-    name: 'Packages', href: '/packages',
-    dropdown: [
-      { name: 'Cultural Tours', href: '/packages?cat=Cultural' },
-      { name: 'Beach Escapes', href: '/packages?cat=Beach' },
-      { name: 'Adventure Tours', href: '/packages?cat=Adventure' },
-      { name: 'Wildlife Safari', href: '/packages?cat=Wildlife' },
-      { name: 'Luxury Retreats', href: '/packages?cat=Luxury' },
-    ]
-  },
   { name: 'Gallery', href: '/gallery' },
   { name: 'Blog', href: '/blog' },
   { name: 'About', href: '/about' },

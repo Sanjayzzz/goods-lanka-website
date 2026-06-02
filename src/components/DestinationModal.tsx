@@ -125,11 +125,11 @@ export default function DestinationModal({ destination, isOpen, onClose }: Desti
 
               <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
                 <Link
-                  href={`/packages?cat=${getPackageCategory(destination.category)}`}
+                  href={`/booking?destination=${encodeURIComponent(destination.name)}`}
                   onClick={onClose}
                   className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-full hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all text-sm"
                 >
-                  <Compass size={16} /> Explore Packages
+                  <Compass size={16} /> Explore Tour
                 </Link>
                 <Link
                   href={`/contact?destination=${encodeURIComponent(destination.name)}`}
