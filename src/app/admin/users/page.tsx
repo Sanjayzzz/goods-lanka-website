@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
-import { UserPlus, Shield, User } from 'lucide-react';
+import { UserPlus, Shield, User, RefreshCw } from 'lucide-react';
 
 interface AdminUser {
   id: string;
@@ -17,8 +17,10 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [currentRole, setCurrentRole] = useState('');
   const [updating, setUpdating] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const load = async () => {
+    setRefreshing(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     const { data: me } = await supabase.from('admin_users').select('role').eq('id', user?.id ?? '').single();
@@ -26,6 +28,7 @@ export default function UsersPage() {
     const { data } = await supabase.from('admin_users').select('*').order('created_at');
     setUsers(data ?? []);
     setLoading(false);
+    setRefreshing(false);
   };
 
   useEffect(() => { load(); }, []);
@@ -54,11 +57,15 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
           <p className="text-gray-500 text-sm">{users.length} admin users</p>
         </div>
+        <button onClick={load} disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-ocean-300 transition-all shadow-sm disabled:opacity-60">
+          <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
       {/* Role Guide */}

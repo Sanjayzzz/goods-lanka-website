@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
-import { Edit2, Save, X, DollarSign, Package as PackageIcon, MapPin } from 'lucide-react';
+import { Edit2, Save, X, DollarSign, Package as PackageIcon, MapPin, RefreshCw } from 'lucide-react';
 import { destinations as staticDestinations } from '@/data/destinations';
 
 interface Package {
@@ -46,6 +46,7 @@ export default function PackagesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
   // Packages State
   const [packages, setPackages] = useState<Package[]>([]);
@@ -59,6 +60,7 @@ export default function PackagesPage() {
 
   const loadData = async () => {
     setLoading(true);
+    setRefreshing(true);
     const supabase = createClient();
 
     try {
@@ -83,6 +85,7 @@ export default function PackagesPage() {
       console.error(err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -189,7 +192,13 @@ export default function PackagesPage() {
           <h2 className="text-2xl font-bold text-gray-900">Packages &amp; Pricing</h2>
           <p className="text-gray-500 text-sm">Configure per-day rates, tour durations, and destination base details</p>
         </div>
-        {saveMsg && <span className="text-green-600 font-medium text-sm bg-green-50 px-4 py-2 rounded-xl border border-green-200">{saveMsg}</span>}
+        <div className="flex items-center gap-3">
+          {saveMsg && <span className="text-green-600 font-medium text-sm bg-green-50 px-4 py-2 rounded-xl border border-green-200">{saveMsg}</span>}
+          <button onClick={loadData} disabled={refreshing}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-ocean-300 transition-all shadow-sm disabled:opacity-60">
+            <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}

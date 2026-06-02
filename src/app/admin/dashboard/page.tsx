@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
-import { CalendarCheck, MessageSquare, Package, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { CalendarCheck, MessageSquare, TrendingUp, CheckCircle, RefreshCw } from 'lucide-react';
 
 interface Stats {
   totalBookings: number;
@@ -47,39 +47,43 @@ export default function DashboardPage() {
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
   const [recentEnquiries, setRecentEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      const supabase = createClient();
-      const now = new Date();
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const load = async () => {
+    setRefreshing(true);
+    const supabase = createClient();
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-      const [bookingsRes, enquiriesRes, recentBRes, recentERes, monthRevRes] = await Promise.all([
-        supabase.from('bookings').select('status', { count: 'exact' }),
-        supabase.from('enquiries').select('status', { count: 'exact' }),
-        supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(5),
-        supabase.from('enquiries').select('*').order('created_at', { ascending: false }).limit(5),
-        supabase.from('bookings').select('total_price').gte('created_at', monthStart).eq('status', 'confirmed'),
-      ]);
+    const [bookingsRes, enquiriesRes, recentBRes, recentERes, monthRevRes] = await Promise.all([
+      supabase.from('bookings').select('status', { count: 'exact' }),
+      supabase.from('enquiries').select('status', { count: 'exact' }),
+      supabase.from('bookings').select('*').order('created_at', { ascending: false }).limit(5),
+      supabase.from('enquiries').select('*').order('created_at', { ascending: false }).limit(5),
+      supabase.from('bookings').select('total_price').gte('created_at', monthStart).eq('status', 'confirmed'),
+    ]);
 
-      const bookings = bookingsRes.data ?? [];
-      const enquiries = enquiriesRes.data ?? [];
-      const monthRevenue = (monthRevRes.data ?? []).reduce((sum, b) => sum + (b.total_price ?? 0), 0);
+    const bookings = bookingsRes.data ?? [];
+    const enquiries = enquiriesRes.data ?? [];
+    const monthRevenue = (monthRevRes.data ?? []).reduce((sum, b) => sum + (b.total_price ?? 0), 0);
 
-      setStats({
-        totalBookings: bookingsRes.count ?? 0,
-        pendingBookings: bookings.filter(b => b.status === 'pending').length,
-        confirmedBookings: bookings.filter(b => b.status === 'confirmed').length,
-        totalEnquiries: enquiriesRes.count ?? 0,
-        newEnquiries: enquiries.filter(e => e.status === 'new').length,
-        monthRevenue,
-      });
-      setRecentBookings(recentBRes.data ?? []);
-      setRecentEnquiries(recentERes.data ?? []);
-      setLoading(false);
-    };
-    load();
-  }, []);
+    setStats({
+      totalBookings: bookingsRes.count ?? 0,
+      pendingBookings: bookings.filter(b => b.status === 'pending').length,
+      confirmedBookings: bookings.filter(b => b.status === 'confirmed').length,
+      totalEnquiries: enquiriesRes.count ?? 0,
+      newEnquiries: enquiries.filter(e => e.status === 'new').length,
+      monthRevenue,
+    });
+    setRecentBookings(recentBRes.data ?? []);
+    setRecentEnquiries(recentERes.data ?? []);
+    setLastUpdated(new Date());
+    setLoading(false);
+    setRefreshing(false);
+  };
+
+  useEffect(() => { load(); }, []);
 
   const statCards = [
     { label: 'Total Bookings', value: stats.totalBookings, icon: CalendarCheck, color: 'from-ocean-500 to-ocean-700', sub: `${stats.pendingBookings} pending` },
@@ -96,9 +100,18 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-        <p className="text-gray-500 text-sm mt-1">Welcome back! Here&apos;s what&apos;s happening today.</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
+          <p className="text-gray-500 text-sm mt-1">
+            Welcome back! Here&apos;s what&apos;s happening today.
+            {lastUpdated && <span className="ml-2 text-gray-400">· Updated {lastUpdated.toLocaleTimeString()}</span>}
+          </p>
+        </div>
+        <button onClick={load} disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-ocean-300 transition-all shadow-sm disabled:opacity-60">
+          <RefreshCw size={15} className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
       {/* Stat Cards */}
