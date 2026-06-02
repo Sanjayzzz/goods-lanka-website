@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/admin/destinations',
+        destination: '/admin/packages?tab=destinations',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

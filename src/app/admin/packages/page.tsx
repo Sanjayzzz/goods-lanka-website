@@ -91,6 +91,12 @@ export default function PackagesPage() {
 
   useEffect(() => {
     loadData();
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') === 'destinations') {
+        setActiveTab('destinations');
+      }
+    }
   }, []);
 
   // --- Package Actions ---
