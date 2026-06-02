@@ -25,6 +25,7 @@ create table if not exists bookings (
   special_requests text,
   total_price numeric(10,2) default 0,
   status text not null default 'pending' check (status in ('pending', 'confirmed', 'cancelled')),
+  user_id uuid references auth.users(id) on delete set null,
   created_at timestamptz default now()
 );
 

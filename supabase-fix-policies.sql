@@ -49,3 +49,8 @@ create policy "Anyone can delete destinations" on destinations
 -- -------------------------------------------------------
 -- "Anon read active packages" -- stays
 -- "Anon read active destinations" -- stays
+
+-- -------------------------------------------------------
+-- Fix missing user_id column in bookings table
+-- -------------------------------------------------------
+alter table bookings add column if not exists user_id uuid references auth.users(id) on delete set null;
