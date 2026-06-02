@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { useRef, useState, FormEvent } from 'react';
+import { useRef, useState, FormEvent, useEffect } from 'react';
 import { Star, ChevronLeft, ChevronRight, Quote, MessageSquarePlus, X, CheckCircle } from 'lucide-react';
 import { testimonials } from '@/data/testimonials';
 import { createClient } from '@/lib/supabase';
@@ -10,6 +10,42 @@ export default function TestimonialCarousel() {
   const [current, setCurrent] = useState(0);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
+  
+  const [dbReviews, setDbReviews] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('package_slug', 'general')
+        .order('created_at', { ascending: false });
+      
+      if (data) {
+        setDbReviews(data);
+      }
+    };
+    fetchReviews();
+  }, []);
+
+  const allTestimonials = [
+    ...dbReviews.map(r => ({
+      id: r.id,
+      name: r.author_name,
+      country: 'Verified Guest',
+      avatar: r.author_name.substring(0, 2).toUpperCase(),
+      rating: r.rating,
+      title: r.rating === 5 ? 'Excellent Experience' : 'Great Service',
+      review: r.comment,
+      tourPackage: 'GODS LANKA Tour',
+      date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    })),
+    ...testimonials
+  ];
+
+  const next = () => setCurrent((p) => (p + 1) % allTestimonials.length);
+  const prev = () => setCurrent((p) => (p - 1 + allTestimonials.length) % allTestimonials.length);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,8 +55,6 @@ export default function TestimonialCarousel() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
 
-  const next = () => setCurrent((p) => (p + 1) % testimonials.length);
-  const prev = () => setCurrent((p) => (p - 1 + testimonials.length) % testimonials.length);
 
   const handleSubmitReview = async (e: FormEvent) => {
     e.preventDefault();
@@ -44,11 +78,15 @@ export default function TestimonialCarousel() {
         setName('');
         setRating(5);
         setComment('');
+        // Refresh reviews after submitting
+        const supabase = createClient();
+        supabase.from('reviews').select('*').eq('package_slug', 'general').order('created_at', { ascending: false })
+          .then(({ data }) => { if (data) setDbReviews(data); });
       }, 3000);
     }
   };
 
-  const t = testimonials[current];
+  const t = allTestimonials[current] || testimonials[0];
 
   return (
     <section ref={ref} className="py-20 sm:py-28 bg-gradient-to-b from-white to-ocean-50/50">
@@ -118,7 +156,7 @@ export default function TestimonialCarousel() {
                 <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Previous
               </button>
               <div className="flex gap-2">
-                {testimonials.map((_, i) => (
+                {allTestimonials.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setCurrent(i)}
