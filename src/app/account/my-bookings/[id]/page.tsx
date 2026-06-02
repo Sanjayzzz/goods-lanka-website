@@ -27,9 +27,10 @@ export default function EditBookingPage() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ travel_date: '', guests: 1, special_requests: '' });
+  const [pricePerDay, setPricePerDay] = useState(0);
+  const [durationDays, setDurationDays] = useState(1);
 
   useEffect(() => {
     const load = async () => {
@@ -40,6 +41,20 @@ export default function EditBookingPage() {
       if (!data) { router.push('/account/my-bookings'); return; }
       setBooking(data);
       setForm({ travel_date: data.travel_date ?? '', guests: data.guests ?? 1, special_requests: data.special_requests ?? '' });
+
+      // Extract duration from special_requests
+      const match = (data.special_requests ?? '').match(/Duration:\s*(\d+)\s*day/i);
+      const days = match ? Number(match[1]) : 1;
+      setDurationDays(days);
+
+      // Fetch destination price
+      const destName = (data.package_name ?? '').replace(' Tour', '').trim();
+      const destSlug = destName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      if (destSlug) {
+        const { data: destData } = await supabase.from('destinations').select('price').eq('slug', destSlug).single();
+        if (destData?.price) setPricePerDay(Number(destData.price));
+      }
+
       setLoading(false);
     };
     load();
@@ -49,13 +64,62 @@ export default function EditBookingPage() {
     e.preventDefault();
     setSaving(true);
     setError('');
-    const supabase = createClient();
-    const { error: updateError } = await supabase.from('bookings')
-      .update({ travel_date: form.travel_date, guests: form.guests, special_requests: form.special_requests })
-      .eq('id', params.id);
-    if (updateError) { setError(updateError.message); }
-    else { setSaved(true); setTimeout(() => setSaved(false), 3000); }
-    setSaving(false);
+    try {
+      const supabase = createClient();
+
+      // Extract duration days from special_requests (format: "Duration: X days\n...")
+      let durationDays = 1;
+      const durationMatch = (form.special_requests || booking?.special_requests || '').match(/Duration:\s*(\d+)\s*day/i);
+      if (durationMatch) {
+        durationDays = Number(durationMatch[1]);
+      }
+
+      // Fetch destination's current per-day price from DB
+      // The package_name is formatted as "Sigiriya Tour" → derive slug
+      const destName = booking?.package_name?.replace(' Tour', '').trim() ?? '';
+      const destSlug = destName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      let pricePerDay = 0;
+      if (destSlug) {
+        const { data: destData } = await supabase
+          .from('destinations')
+          .select('price')
+          .eq('slug', destSlug)
+          .single();
+        if (destData?.price) {
+          pricePerDay = Number(destData.price);
+        }
+      }
+
+      // Recalculate total: if we have a valid rate, recalculate; otherwise keep existing total scaled by guest ratio
+      let newTotal = booking?.total_price ?? 0;
+      if (pricePerDay > 0) {
+        newTotal = pricePerDay * durationDays * form.guests;
+      } else if (booking && booking.guests > 0) {
+        // Fallback: scale existing total by ratio of new guests / old guests
+        const perGuestTotal = booking.total_price / booking.guests;
+        newTotal = Math.round(perGuestTotal * form.guests);
+      }
+
+      const { error: updateError } = await supabase.from('bookings')
+        .update({
+          travel_date: form.travel_date,
+          guests: form.guests,
+          special_requests: form.special_requests,
+          total_price: newTotal,
+        })
+        .eq('id', params.id);
+
+      if (updateError) {
+        setError(updateError.message);
+        setSaving(false);
+      } else {
+        // Navigate back to My Bookings after successful save
+        router.push('/account/my-bookings');
+      }
+    } catch (err) {
+      setError(String(err));
+      setSaving(false);
+    }
   };
 
   if (loading) return (
@@ -88,11 +152,6 @@ export default function EditBookingPage() {
               </div>
             )}
 
-            {saved && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm font-medium">
-                ✓ Changes saved successfully!
-              </div>
-            )}
 
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>
@@ -104,7 +163,14 @@ export default function EditBookingPage() {
               <div><p className="text-gray-400 text-xs mb-0.5">Email</p><p className="font-medium text-gray-800">{booking.email}</p></div>
               <div><p className="text-gray-400 text-xs mb-0.5">Phone</p><p className="font-medium text-gray-800">{booking.phone}</p></div>
               <div><p className="text-gray-400 text-xs mb-0.5">Country</p><p className="font-medium text-gray-800">{booking.country}</p></div>
-              <div><p className="text-gray-400 text-xs mb-0.5">Total Price</p><p className="font-bold text-ocean-700 text-lg">${booking.total_price?.toLocaleString()}</p></div>
+              <div>
+                <p className="text-gray-400 text-xs mb-0.5">Total Price</p>
+                {pricePerDay > 0 ? (
+                  <p className="font-bold text-ocean-700 text-lg">${(pricePerDay * durationDays * form.guests).toLocaleString()} <span className="text-xs font-normal text-gray-400">(updated)</span></p>
+                ) : (
+                  <p className="font-bold text-ocean-700 text-lg">${booking.total_price?.toLocaleString()}</p>
+                )}
+              </div>
               <div><p className="text-gray-400 text-xs mb-0.5">Status</p>
                 <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${
                   booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :

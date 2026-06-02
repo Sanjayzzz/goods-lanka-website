@@ -93,9 +93,9 @@ export default function MyBookingsPage() {
             <CalendarCheck size={48} className="mx-auto mb-4 text-gray-200" />
             <h3 className="font-semibold text-gray-700 text-lg mb-2">No bookings yet</h3>
             <p className="text-gray-400 text-sm mb-6">Start planning your dream Sri Lanka adventure!</p>
-            <Link href="/packages"
+            <Link href="/booking"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all">
-              Explore Packages <ChevronRight size={16} />
+              Explore Tours <ChevronRight size={16} />
             </Link>
           </div>
         ) : (
