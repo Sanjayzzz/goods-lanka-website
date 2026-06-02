@@ -71,10 +71,22 @@ export default function PackagesPage() {
       // Load Destinations
       const { data: dests } = await supabase.from('destinations').select('*').order('name');
       if (!dests || dests.length === 0) {
+        const defaultPrices: Record<string, number> = {
+          sigiriya: 150,
+          ella: 120,
+          kandy: 100,
+          mirissa: 130,
+          galle: 110,
+          'nuwara-eliya': 125,
+          yala: 180,
+          'arugam-bay': 90,
+          bentota: 140,
+          colombo: 80
+        };
         const mappedStatic = staticDestinations.map(d => ({
           ...d,
           review_count: d.reviewCount,
-          price: (d as any).price || 0,
+          price: defaultPrices[d.slug.toLowerCase()] || 0,
           active: true
         })) as any[];
         setDestinations(mappedStatic);
@@ -133,7 +145,7 @@ export default function PackagesPage() {
 
   // --- Destination Actions ---
   const startEditDest = (dest: Destination) => {
-    setEditingDest(dest.id);
+    setEditingDest(dest.slug);
     setDestEditData({
       name: dest.name,
       tagline: dest.tagline,
@@ -144,14 +156,29 @@ export default function PackagesPage() {
     });
   };
 
-  const saveEditDest = async (id: string) => {
+  const saveEditDest = async (slug: string) => {
     setSaving(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.from('destinations').update(destEditData).eq('id', id);
+      const destToSave = destinations.find(d => d.slug === slug);
+      if (!destToSave) return;
+
+      const saveData = {
+        name: destEditData.name ?? destToSave.name,
+        slug: destToSave.slug,
+        tagline: destEditData.tagline ?? destToSave.tagline,
+        description: destEditData.description ?? destToSave.description,
+        category: destEditData.category ?? destToSave.category,
+        price: Number(destEditData.price ?? destToSave.price),
+        active: destEditData.active ?? destToSave.active,
+        rating: destToSave.rating ?? 4.8,
+        review_count: destToSave.review_count ?? destToSave.reviewCount ?? 0,
+      };
+
+      const { error } = await supabase.from('destinations').upsert(saveData, { onConflict: 'slug' });
       
       if (error) {
-        setDestinations(prev => prev.map(d => d.id === id ? { ...d, ...destEditData } as Destination : d));
+        setDestinations(prev => prev.map(d => d.slug === slug ? { ...d, ...destEditData } as Destination : d));
         setSaveMsg('Updated locally! (Sync database with new SQL schema for persistence)');
       } else {
         setSaveMsg('Destination saved successfully!');
@@ -161,7 +188,7 @@ export default function PackagesPage() {
       setEditingDest(null);
     } catch (err) {
       console.error(err);
-      setDestinations(prev => prev.map(d => d.id === id ? { ...d, ...destEditData } as Destination : d));
+      setDestinations(prev => prev.map(d => d.slug === slug ? { ...d, ...destEditData } as Destination : d));
       setSaveMsg('Updated locally!');
       setTimeout(() => setSaveMsg(''), 3000);
       setEditingDest(null);
@@ -170,17 +197,24 @@ export default function PackagesPage() {
     }
   };
 
-  const toggleDestActive = async (id: string, active: boolean) => {
+  const toggleDestActive = async (slug: string, active: boolean) => {
     try {
       const supabase = createClient();
-      const { error } = await supabase.from('destinations').update({ active: !active }).eq('id', id);
+      const destToSave = destinations.find(d => d.slug === slug);
+      if (!destToSave) return;
+
+      const { error } = await supabase.from('destinations').upsert({
+        ...destToSave,
+        active: !active
+      }, { onConflict: 'slug' });
+
       if (error) {
-        setDestinations(prev => prev.map(d => d.id === id ? { ...d, active: !active } : d));
+        setDestinations(prev => prev.map(d => d.slug === slug ? { ...d, active: !active } : d));
       } else {
         await loadData();
       }
     } catch (err) {
-      setDestinations(prev => prev.map(d => d.id === id ? { ...d, active: !active } : d));
+      setDestinations(prev => prev.map(d => d.slug === slug ? { ...d, active: !active } : d));
     }
   };
 
@@ -322,8 +356,8 @@ export default function PackagesPage() {
         ) : (
           <>
             {destinations.map(dest => (
-              <div key={dest.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
-                {editingDest === dest.id ? (
+              <div key={dest.slug} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+                {editingDest === dest.slug ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {[
@@ -363,7 +397,7 @@ export default function PackagesPage() {
                     </div>
 
                     <div className="flex gap-3 pt-1">
-                      <button onClick={() => saveEditDest(dest.id)} disabled={saving}
+                      <button onClick={() => saveEditDest(dest.slug)} disabled={saving}
                         className="flex items-center gap-2 px-5 py-2.5 bg-ocean-700 text-white rounded-xl text-sm font-medium hover:bg-ocean-800 disabled:opacity-60">
                         <Save size={15} /> {saving ? 'Saving...' : 'Save Changes'}
                       </button>
@@ -398,7 +432,7 @@ export default function PackagesPage() {
                           className="flex items-center gap-1.5 px-4 py-2 bg-ocean-50 text-ocean-700 rounded-xl text-sm font-medium hover:bg-ocean-100">
                           <Edit2 size={14} /> Edit
                         </button>
-                        <button onClick={() => toggleDestActive(dest.id, dest.active)}
+                        <button onClick={() => toggleDestActive(dest.slug, dest.active)}
                           className={`px-4 py-2 rounded-xl text-sm font-medium ${dest.active ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-700 hover:bg-green-100'}`}>
                           {dest.active ? 'Hide' : 'Show'}
                         </button>
