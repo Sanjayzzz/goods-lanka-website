@@ -68,33 +68,33 @@ export default function PackagesPage() {
       const { data: pkgs } = await supabase.from('packages').select('*').order('name');
       setPackages(pkgs ?? []);
 
-      // Load Destinations
-      const { data: dests } = await supabase.from('destinations').select('*').order('name');
-      if (!dests || dests.length === 0) {
+      // Load Destinations — always prefer DB data
+      const { data: dests, error: destError } = await supabase.from('destinations').select('*').order('name');
+
+      if (destError) {
+        console.error('Destinations load error:', destError);
+      }
+
+      if (dests && dests.length > 0) {
+        // DB has data — use it (includes any price edits)
+        setDestinations(dests);
+      } else {
+        // DB is empty or table not seeded — fall back to static with sensible defaults
         const defaultPrices: Record<string, number> = {
-          sigiriya: 150,
-          ella: 120,
-          kandy: 100,
-          mirissa: 130,
-          galle: 110,
-          'nuwara-eliya': 125,
-          yala: 180,
-          'arugam-bay': 90,
-          bentota: 140,
-          colombo: 80
+          sigiriya: 150, ella: 120, kandy: 100, mirissa: 130,
+          galle: 110, 'nuwara-eliya': 125, yala: 180,
+          'arugam-bay': 90, bentota: 140, colombo: 80
         };
         const mappedStatic = staticDestinations.map(d => ({
           ...d,
           review_count: d.reviewCount,
-          price: defaultPrices[d.slug.toLowerCase()] || 0,
+          price: defaultPrices[d.slug.toLowerCase()] ?? 0,
           active: true
         })) as any[];
         setDestinations(mappedStatic);
-      } else {
-        setDestinations(dests);
       }
     } catch (err) {
-      console.error(err);
+      console.error('loadData error:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -163,33 +163,50 @@ export default function PackagesPage() {
       const destToSave = destinations.find(d => d.slug === slug);
       if (!destToSave) return;
 
-      const saveData = {
+      const updatedPrice = Number(destEditData.price ?? destToSave.price);
+      const updatedFields = {
         name: destEditData.name ?? destToSave.name,
-        slug: destToSave.slug,
         tagline: destEditData.tagline ?? destToSave.tagline,
         description: destEditData.description ?? destToSave.description,
         category: destEditData.category ?? destToSave.category,
-        price: Number(destEditData.price ?? destToSave.price),
+        price: updatedPrice,
         active: destEditData.active ?? destToSave.active,
-        rating: destToSave.rating ?? 4.8,
-        review_count: destToSave.review_count ?? destToSave.reviewCount ?? 0,
       };
 
-      const { error } = await supabase.from('destinations').upsert(saveData, { onConflict: 'slug' });
-      
-      if (error) {
-        setDestinations(prev => prev.map(d => d.slug === slug ? { ...d, ...destEditData } as Destination : d));
-        setSaveMsg('Updated locally! (Sync database with new SQL schema for persistence)');
-      } else {
-        setSaveMsg('Destination saved successfully!');
-      }
-      setTimeout(() => setSaveMsg(''), 3000);
-      await loadData();
+      // Apply to local state immediately so UI reflects change right away
+      setDestinations(prev => prev.map(d =>
+        d.slug === slug ? { ...d, ...updatedFields } as Destination : d
+      ));
       setEditingDest(null);
+
+      // Try to persist to database (UPDATE existing row by slug)
+      const { error } = await supabase
+        .from('destinations')
+        .update(updatedFields)
+        .eq('slug', slug);
+
+      if (error) {
+        // DB row may not exist yet — try inserting it
+        const { error: insertError } = await supabase.from('destinations').insert({
+          ...(destToSave as any),
+          ...updatedFields,
+          id: undefined, // let DB generate UUID
+        });
+
+        if (insertError) {
+          setSaveMsg('✓ Updated locally (database sync pending)');
+        } else {
+          setSaveMsg('✓ Destination created & saved in database!');
+          await loadData(); // Refresh with DB-assigned UUID
+        }
+      } else {
+        setSaveMsg('✓ Destination saved successfully!');
+        // No need to reload — local state already updated
+      }
+      setTimeout(() => setSaveMsg(''), 4000);
     } catch (err) {
-      console.error(err);
-      setDestinations(prev => prev.map(d => d.slug === slug ? { ...d, ...destEditData } as Destination : d));
-      setSaveMsg('Updated locally!');
+      console.error('saveEditDest error:', err);
+      setSaveMsg('✓ Updated locally');
       setTimeout(() => setSaveMsg(''), 3000);
       setEditingDest(null);
     } finally {
