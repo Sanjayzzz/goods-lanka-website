@@ -110,12 +110,12 @@ export default function PackagesPage() {
                     </div>
                   ))}
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Sale Price (USD $)</label>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Price Per Day / Person (USD $)</label>
                     <input type="number" value={editData.price ?? ''} onChange={e => setEditData(p => ({ ...p, price: Number(e.target.value) }))}
                       className="w-full px-3 py-2.5 border-2 border-ocean-400 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500 font-bold text-ocean-700 text-lg" />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Original Price (USD $)</label>
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Original Per Day (USD $)</label>
                     <input type="number" value={editData.original_price ?? ''} onChange={e => setEditData(p => ({ ...p, original_price: Number(e.target.value) }))}
                       className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500" />
                   </div>
@@ -144,9 +144,9 @@ export default function PackagesPage() {
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-ocean-700">${pkg.price?.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-ocean-700">${pkg.price?.toLocaleString()} <span className="text-sm font-normal text-gray-500">/ day</span></p>
                     {pkg.original_price > pkg.price && (
-                      <p className="text-sm text-gray-400 line-through">${pkg.original_price?.toLocaleString()}</p>
+                      <p className="text-sm text-gray-400 line-through">${pkg.original_price?.toLocaleString()} / day</p>
                     )}
                   </div>
                   <div className="flex gap-2">

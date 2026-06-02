@@ -10,12 +10,6 @@ import { Suspense } from 'react';
 import { SlidersHorizontal, Users, Clock, MapPin, ChevronDown } from 'lucide-react';
 
 const categories = ['All', 'Cultural', 'Beach', 'Adventure', 'Wildlife', 'Luxury'];
-const durationBuckets = [
-  { label: '0–3 Nights', min: 0, max: 3 },
-  { label: '4–5 Nights', min: 4, max: 5 },
-  { label: '6–7 Nights', min: 6, max: 7 },
-  { label: '8+ Nights', min: 8, max: 999 },
-];
 
 function PackagesContent() {
   const searchParams = useSearchParams();
@@ -24,21 +18,36 @@ function PackagesContent() {
   const [active, setActive] = useState(initialCat);
   const [sort, setSort] = useState('recommended');
   const [passengers, setPassengers] = useState(0); // 0 = any
-  const [durationFilter, setDurationFilter] = useState<number | null>(null); // index into durationBuckets
   const [showFilters, setShowFilters] = useState(false);
+  const [livePackages, setLivePackages] = useState(packages);
 
   useEffect(() => {
     const cat = searchParams.get('cat');
     if (cat) setActive(cat);
   }, [searchParams]);
 
-  let filtered = packages.filter(p => {
+  useEffect(() => {
+    import('@/lib/supabase').then(({ createClient }) => {
+      const supabase = createClient();
+      supabase.from('packages').select('slug, price, active').then(({ data }) => {
+        if (data) {
+          const liveMap = new Map(data.map(p => [p.slug, p]));
+          setLivePackages(packages.filter(p => {
+             const live = liveMap.get(p.slug);
+             return !live || live.active;
+          }).map(p => {
+             const live = liveMap.get(p.slug);
+             if (live) return { ...p, price: live.price };
+             return p;
+          }));
+        }
+      });
+    });
+  }, []);
+
+  let filtered = livePackages.filter(p => {
     if (active !== 'All' && p.category !== active) return false;
     if (passengers > 0 && p.maxGuests < passengers) return false;
-    if (durationFilter !== null) {
-      const bucket = durationBuckets[durationFilter];
-      if (p.nights < bucket.min || p.nights > bucket.max) return false;
-    }
     return true;
   });
 
@@ -46,7 +55,7 @@ function PackagesContent() {
   if (sort === 'price-desc') filtered = [...filtered].sort((a, b) => b.price - a.price);
   if (sort === 'rating') filtered = [...filtered].sort((a, b) => b.rating - a.rating);
 
-  const hasActiveFilters = active !== 'All' || passengers > 0 || durationFilter !== null;
+  const hasActiveFilters = active !== 'All' || passengers > 0;
 
   return (
     <>
@@ -90,20 +99,7 @@ function PackagesContent() {
               exit={{ opacity: 0, height: 0 }}
               className="border-t border-gray-100 pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
 
-              {/* Duration Filter */}
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                  <Clock size={13} /> Duration
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {durationBuckets.map((bucket, i) => (
-                    <button key={i} onClick={() => setDurationFilter(durationFilter === i ? null : i)}
-                      className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all ${durationFilter === i ? 'bg-tropical-600 text-white border-tropical-600' : 'border-gray-200 text-gray-600 hover:border-tropical-400'}`}>
-                      {bucket.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {/* Duration filter removed */}
 
               {/* Passengers Filter */}
               <div>
@@ -138,15 +134,9 @@ function PackagesContent() {
             </motion.div>
           )}
 
-          {/* Duration quick-pills always visible when filters hidden */}
+          {/* Quick-pills when filters hidden */}
           {!showFilters && (
             <div className="flex gap-2 overflow-x-auto no-scrollbar">
-              {durationBuckets.map((bucket, i) => (
-                <button key={i} onClick={() => setDurationFilter(durationFilter === i ? null : i)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${durationFilter === i ? 'bg-tropical-600 text-white border-tropical-600' : 'border-gray-200 text-gray-500 hover:border-tropical-400'}`}>
-                  {bucket.label}
-                </button>
-              ))}
               {passengers === 0 ? null : (
                 <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-ocean-100 text-ocean-700 border border-ocean-200">
                   {passengers === 6 ? '6+' : passengers} passenger{passengers !== 1 ? 's' : ''}
@@ -160,14 +150,18 @@ function PackagesContent() {
       {/* Packages Grid */}
       <section className="py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-gray-400 text-sm mb-8">
-            {filtered.length} package{filtered.length !== 1 ? 's' : ''} found
-            {hasActiveFilters && <button onClick={() => { setActive('All'); setPassengers(0); setDurationFilter(null); }} className="ml-3 text-tropical-600 font-semibold hover:underline">Clear filters</button>}
-          </p>
+          <div className="text-sm text-gray-500 mb-6 flex items-center">
+            <span>{filtered.length} package{filtered.length !== 1 ? 's' : ''} found</span>
+            {hasActiveFilters && (
+              <button onClick={() => { setActive('All'); setPassengers(0); }} className="ml-3 text-tropical-600 font-semibold hover:underline">
+                Clear filters
+              </button>
+            )}
+          </div>
           {filtered.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-gray-400 text-lg mb-3">No packages match your filters.</p>
-              <button onClick={() => { setActive('All'); setPassengers(0); setDurationFilter(null); }}
+              <button onClick={() => { setActive('All'); setPassengers(0); }}
                 className="text-tropical-600 font-semibold hover:underline">Clear all filters</button>
             </div>
           ) : (

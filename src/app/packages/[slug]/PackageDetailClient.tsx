@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Package } from '@/data/packages';
-import { Star, Clock, Users, Check, ChevronRight, Calendar, Phone, ArrowRight } from 'lucide-react';
+import { Star, Clock, Users, Check, ChevronRight, Calendar, Phone, ArrowRight, Sun } from 'lucide-react';
 import ReviewsSection from './ReviewsSection';
 
 interface Props { pkg: Package; }
@@ -14,7 +14,23 @@ export default function PackageDetailClient({ pkg }: Props) {
   const [activeTab, setActiveTab] = useState<'highlights' | 'itinerary' | 'included'>('highlights');
   const [activeImg, setActiveImg] = useState(0);
   const [guests, setGuests] = useState(2);
-  const total = pkg.price * guests;
+  const [days, setDays] = useState(pkg.nights + 1); // Default to the package's recommended duration
+  const [livePrice, setLivePrice] = useState(pkg.price);
+  const [liveOriginalPrice, setLiveOriginalPrice] = useState(pkg.originalPrice);
+
+  useEffect(() => {
+    import('@/lib/supabase').then(({ createClient }) => {
+       const supabase = createClient();
+       supabase.from('packages').select('price, original_price').eq('slug', pkg.slug).single().then(({ data }) => {
+          if (data) {
+             setLivePrice(data.price);
+             if (data.original_price) setLiveOriginalPrice(data.original_price);
+          }
+       });
+    });
+  }, [pkg.slug]);
+
+  const total = livePrice * guests * days;
 
   return (
     <main className="pt-24 lg:pt-32">
@@ -39,7 +55,7 @@ export default function PackageDetailClient({ pkg }: Props) {
                 <Image src={pkg.images[activeImg] || pkg.image} alt={pkg.name} fill className="object-cover" priority sizes="(max-width: 1024px) 100vw, 66vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 <div className="absolute top-5 left-5 px-3 py-1.5 rounded-full bg-coral-500 text-white text-sm font-bold">
-                  {Math.round(((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100)}% OFF
+                  {Math.round(((liveOriginalPrice - livePrice) / liveOriginalPrice) * 100)}% OFF
                 </div>
               </div>
               <div className="flex gap-3">
@@ -164,10 +180,10 @@ export default function PackageDetailClient({ pkg }: Props) {
               {/* Price Card */}
               <div className="bg-white rounded-3xl shadow-premium p-7 border border-gray-100">
                 <div className="mb-5">
-                  <span className="text-gray-400 text-sm line-through">${pkg.originalPrice} / person</span>
+                  <span className="text-gray-400 text-sm line-through">${liveOriginalPrice} / day</span>
                   <div className="flex items-end gap-2 mt-1">
-                    <span className="font-[var(--font-playfair)] text-4xl font-bold text-ocean-900">${pkg.price}</span>
-                    <span className="text-gray-400 text-sm mb-1">/ person</span>
+                    <span className="font-[var(--font-playfair)] text-4xl font-bold text-ocean-900">${livePrice}</span>
+                    <span className="text-gray-400 text-sm mb-1">/ person / day</span>
                   </div>
                   <div className="flex items-center gap-1 mt-1.5">
                     {Array.from({length: 5}).map((_,i) => <Star key={i} size={14} className={i < Math.round(pkg.rating) ? 'text-sunset-400 fill-sunset-400' : 'text-gray-200'} />)}
@@ -177,10 +193,14 @@ export default function PackageDetailClient({ pkg }: Props) {
 
                 <div className="space-y-3 mb-5">
                   <div className="flex items-center gap-3 p-3.5 bg-gray-50 rounded-xl">
-                    <Calendar size={18} className="text-tropical-500" />
-                    <div>
-                      <p className="text-xs text-gray-400">Duration</p>
-                      <p className="text-sm font-semibold text-ocean-900">{pkg.duration}</p>
+                    <Sun size={18} className="text-tropical-500" />
+                    <div className="flex-1">
+                      <p className="text-xs text-gray-400 mb-0.5">Number of Days</p>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => setDays(d => Math.max(1, d - 1))} className="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 font-bold transition-colors">−</button>
+                        <span className="font-semibold text-ocean-900 w-6 text-center">{days}</span>
+                        <button onClick={() => setDays(d => d + 1)} className="w-7 h-7 rounded-full bg-tropical-100 hover:bg-tropical-200 flex items-center justify-center text-tropical-700 font-bold transition-colors">+</button>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-3.5 bg-gray-50 rounded-xl">
@@ -198,8 +218,8 @@ export default function PackageDetailClient({ pkg }: Props) {
 
                 <div className="border-t border-gray-100 pt-4 mb-5">
                   <div className="flex justify-between text-sm text-gray-500 mb-1">
-                    <span>${pkg.price} × {guests} guests</span>
-                    <span>${(pkg.price * guests).toLocaleString()}</span>
+                    <span>${livePrice} × {guests} guests × {days} days</span>
+                    <span>${(livePrice * guests * days).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between font-bold text-ocean-900 text-lg mt-2">
                     <span>Total</span>

@@ -52,9 +52,9 @@ export default function PackageCard({ pkg, index }: PackageCardProps) {
 
             {/* Price */}
             <div className="absolute bottom-4 right-4 text-right">
-              <span className="text-white/60 text-xs line-through block">${pkg.originalPrice}</span>
+              <span className="text-white/60 text-xs line-through block">${pkg.originalPrice} / day</span>
               <span className="text-white text-2xl font-bold">${pkg.price}</span>
-              <span className="text-white/70 text-xs"> /person</span>
+              <span className="text-white/70 text-xs"> / day</span>
             </div>
           </div>
 
@@ -99,7 +99,7 @@ export default function PackageCard({ pkg, index }: PackageCardProps) {
 
             {/* CTA */}
             <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-              <span className="text-sm text-gray-400">Starting from <strong className="text-ocean-900">${pkg.price}</strong></span>
+              <span className="text-sm text-gray-400">Starting from <strong className="text-ocean-900">${pkg.price} / day</strong></span>
               <span className="flex items-center gap-1 text-tropical-600 text-sm font-semibold group-hover:gap-2 transition-all">
                 View Details <ArrowRight size={14} />
               </span>
