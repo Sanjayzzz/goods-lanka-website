@@ -96,10 +96,10 @@ export default function Navbar() {
 
       {/* Main navbar */}
       <motion.nav
-        className={`fixed top-0 lg:top-[36px] left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? 'bg-white/95 backdrop-blur-xl shadow-lg lg:top-0'
-            : 'bg-transparent'
+            ? 'top-0 bg-white/95 backdrop-blur-xl shadow-lg'
+            : 'top-0 lg:top-[36px] bg-transparent'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">

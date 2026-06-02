@@ -1,17 +1,52 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
-import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { useRef, useState, FormEvent } from 'react';
+import { Star, ChevronLeft, ChevronRight, Quote, MessageSquarePlus, X, CheckCircle } from 'lucide-react';
 import { testimonials } from '@/data/testimonials';
+import { createClient } from '@/lib/supabase';
 
 export default function TestimonialCarousel() {
   const [current, setCurrent] = useState(0);
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  
+  const [name, setName] = useState('');
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+
   const next = () => setCurrent((p) => (p + 1) % testimonials.length);
   const prev = () => setCurrent((p) => (p - 1 + testimonials.length) % testimonials.length);
+
+  const handleSubmitReview = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!name || !comment) return;
+    setIsSubmitting(true);
+    
+    const supabase = createClient();
+    const { error } = await supabase.from('reviews').insert({
+      package_slug: 'general',
+      author_name: name,
+      rating,
+      comment
+    });
+
+    setIsSubmitting(false);
+    if (!error) {
+      setSubmitSuccess(true);
+      setTimeout(() => {
+        setIsModalOpen(false);
+        setSubmitSuccess(false);
+        setName('');
+        setRating(5);
+        setComment('');
+      }, 3000);
+    }
+  };
 
   const t = testimonials[current];
 
@@ -26,7 +61,15 @@ export default function TestimonialCarousel() {
         >
           <span className="text-tropical-600 text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Testimonials</span>
           <h2 className="font-[var(--font-playfair)] text-3xl sm:text-4xl lg:text-5xl font-bold text-ocean-900 mb-4">What Our Travelers Say</h2>
-          <div className="section-divider mx-auto" />
+          <div className="section-divider mx-auto mb-8" />
+          
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-ocean-700 text-white rounded-full font-medium hover:bg-ocean-800 transition-colors shadow-md"
+          >
+            <MessageSquarePlus size={18} />
+            Write a Review
+          </button>
         </motion.div>
 
         <motion.div
@@ -92,6 +135,85 @@ export default function TestimonialCarousel() {
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-ocean-950/40 backdrop-blur-sm"
+              onClick={() => !isSubmitting && !submitSuccess && setIsModalOpen(false)}
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 sm:p-8"
+            >
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              {submitSuccess ? (
+                <div className="py-12 text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="text-green-500 w-8 h-8" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-ocean-900 mb-2">Thank You!</h3>
+                  <p className="text-gray-500">Your review has been submitted successfully.</p>
+                </div>
+              ) : (
+                <>
+                  <h3 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Write a Review</h3>
+                  <form onSubmit={handleSubmitReview} className="space-y-4 text-left">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                      <input 
+                        type="text" required
+                        value={name} onChange={e => setName(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 transition-shadow"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star} type="button"
+                            onClick={() => setRating(star)}
+                            className="p-1 transition-transform hover:scale-110"
+                          >
+                            <Star size={28} className={star <= rating ? 'text-sunset-400 fill-sunset-400' : 'text-gray-200'} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Review</label>
+                      <textarea 
+                        required rows={4}
+                        value={comment} onChange={e => setComment(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 transition-shadow resize-none"
+                        placeholder="Tell us about your experience..."
+                      />
+                    </div>
+                    <button 
+                      type="submit" disabled={isSubmitting}
+                      className="w-full py-4 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 mt-4"
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                    </button>
+                  </form>
+                </>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
