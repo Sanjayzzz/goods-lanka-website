@@ -197,3 +197,103 @@ drop policy if exists "Users can update their own avatars" on storage.objects;
 create policy "Users can update their own avatars"
   on storage.objects for update
   using ( bucket_id = 'avatars' and auth.role() = 'authenticated' );
+
+-- =====================================================
+-- 8. DESTINATIONS TABLE
+-- =====================================================
+create table if not exists destinations (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  slug text unique not null,
+  tagline text,
+  description text,
+  image text,
+  rating numeric(3,1) default 4.8,
+  review_count integer default 0,
+  highlights text[],
+  category text,
+  price numeric(10,2) default 0,
+  active boolean default true,
+  created_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table destinations enable row level security;
+
+-- Policies
+drop policy if exists "Anon read active destinations" on destinations;
+create policy "Anon read active destinations" on destinations for select using (active = true or auth.role() = 'authenticated');
+
+drop policy if exists "Authenticated insert destinations" on destinations;
+create policy "Authenticated insert destinations" on destinations for insert with check (auth.role() = 'authenticated');
+
+drop policy if exists "Authenticated update destinations" on destinations;
+create policy "Authenticated update destinations" on destinations for update using (auth.role() = 'authenticated');
+
+drop policy if exists "Authenticated delete destinations" on destinations;
+create policy "Authenticated delete destinations" on destinations for delete using (auth.role() = 'authenticated');
+
+-- Seed Destinations Data
+insert into destinations (name, slug, tagline, description, image, rating, review_count, highlights, category, price, active) values
+(
+  'Sigiriya', 'sigiriya', 'The Lion Rock Fortress',
+  'Rise above the ancient kingdom and witness the breathtaking 5th-century rock fortress, a UNESCO World Heritage Site surrounded by lush gardens and royal pools.',
+  'https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80',
+  4.9, 2847, ARRAY['UNESCO Heritage', 'Ancient Frescoes', 'Mirror Wall', 'Royal Gardens'], 'Cultural', 150.00, true
+),
+(
+  'Ella', 'ella', 'Mountain Paradise',
+  'Nestled in the misty highlands, Ella offers stunning views of tea plantations, waterfalls, and the iconic Nine Arch Bridge — a paradise for nature lovers.',
+  'https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80',
+  4.8, 3126, ARRAY['Nine Arch Bridge', 'Little Adam''s Peak', 'Tea Plantations', 'Ravana Falls'], 'Nature', 120.00, true
+),
+(
+  'Kandy', 'kandy', 'Cultural Capital',
+  'Explore Sri Lanka''s cultural heart — home to the sacred Temple of the Tooth, scenic Kandy Lake, and vibrant Kandyan dance traditions.',
+  'https://images.unsplash.com/photo-1665849050332-8d5d7e59afb6?w=800&q=80',
+  4.7, 2534, ARRAY['Temple of the Tooth', 'Kandy Lake', 'Royal Botanical Gardens', 'Cultural Shows'], 'Cultural', 100.00, true
+),
+(
+  'Mirissa', 'mirissa', 'Tropical Beach Haven',
+  'Pristine golden beaches, turquoise waters, and world-class whale watching — Mirissa is the ultimate tropical beach escape on Sri Lanka''s southern coast.',
+  'https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80',
+  4.8, 1967, ARRAY['Whale Watching', 'Coconut Tree Hill', 'Secret Beach', 'Surf Breaks'], 'Beach', 130.00, true
+),
+(
+  'Galle', 'galle', 'Colonial Charm',
+  'Wander through the UNESCO-listed Galle Fort, where Dutch colonial architecture meets vibrant cafés, boutiques, and ocean-side sunsets.',
+  'https://images.unsplash.com/photo-1704797390682-76479a29dc9a?w=800&q=80',
+  4.7, 2203, ARRAY['Galle Fort', 'Dutch Architecture', 'Lighthouse', 'Boutique Shopping'], 'Cultural', 110.00, true
+),
+(
+  'Nuwara Eliya', 'nuwara-eliya', 'Little England',
+  'Experience the cool mountain climate, endless tea estates, and colonial charm of Sri Lanka''s hill country — a refreshing escape from tropical heat.',
+  'https://images.unsplash.com/photo-1559038300-07cb5d6c3d27?w=800&q=80',
+  4.6, 1845, ARRAY['Tea Estates', 'Gregory Lake', 'Horton Plains', 'Strawberry Farms'], 'Nature', 125.00, true
+),
+(
+  'Yala', 'yala', 'Wildlife Kingdom',
+  'Home to the highest leopard density in the world, Yala National Park offers thrilling safaris through diverse ecosystems teeming with wildlife.',
+  'https://images.unsplash.com/photo-1533484482814-3fe2d922be89?w=800&q=80',
+  4.8, 2678, ARRAY['Leopard Safari', 'Elephant Herds', 'Bird Watching', 'Coastal Wilderness'], 'Wildlife', 180.00, true
+),
+(
+  'Arugam Bay', 'arugam-bay', 'Surfer''s Paradise',
+  'World-renowned surf breaks, laid-back vibes, and stunning east coast beaches make Arugam Bay the ultimate destination for surf enthusiasts.',
+  'https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80',
+  4.7, 1423, ARRAY['World-Class Surfing', 'Beach Culture', 'Lagoon Safari', 'Kumana Park'], 'Beach', 90.00, true
+),
+(
+  'Bentota', 'bentota', 'Luxury Coastal Retreat',
+  'Golden beaches, luxury resorts, and thrilling water sports — Bentota is Sri Lanka''s premier coastal destination for relaxation and adventure.',
+  'https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80',
+  4.6, 1756, ARRAY['Water Sports', 'River Safari', 'Turtle Hatchery', 'Luxury Resorts'], 'Beach', 140.00, true
+),
+(
+  'Colombo', 'colombo', 'Vibrant Capital',
+  'Sri Lanka''s dynamic capital blends modern luxury with colonial heritage — world-class dining, shopping, and a vibrant nightlife scene await.',
+  'https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=800&q=80',
+  4.5, 3456, ARRAY['Gangaramaya Temple', 'Galle Face Green', 'Fine Dining', 'Shopping'], 'Urban', 80.00, true
+)
+on conflict (slug) do nothing;
+
