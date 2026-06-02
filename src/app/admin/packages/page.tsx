@@ -128,13 +128,37 @@ export default function PackagesPage() {
 
   const saveEditPkg = async (id: string) => {
     setSaving(true);
-    const supabase = createClient();
-    await supabase.from('packages').update(pkgEditData).eq('id', id);
-    setSaveMsg('Package saved successfully!');
-    setTimeout(() => setSaveMsg(''), 3000);
-    await loadData();
-    setEditingPkg(null);
-    setSaving(false);
+    try {
+      const supabase = createClient();
+
+      // Verify session is active
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setSaveMsg('❌ Session expired — please log out and log in again.');
+        setTimeout(() => setSaveMsg(''), 5000);
+        setSaving(false);
+        return;
+      }
+
+      const { error } = await supabase
+        .from('packages')
+        .update(pkgEditData)
+        .eq('id', id);
+
+      if (error) {
+        console.error('Package save error:', error);
+        setSaveMsg(`❌ Error: ${error.message}`);
+      } else {
+        setSaveMsg('✅ Package saved successfully!');
+        await loadData();
+        setEditingPkg(null);
+      }
+    } catch (err) {
+      setSaveMsg(`❌ Unexpected error: ${String(err)}`);
+    } finally {
+      setTimeout(() => setSaveMsg(''), 5000);
+      setSaving(false);
+    }
   };
 
   const togglePkgActive = async (id: string, active: boolean) => {
