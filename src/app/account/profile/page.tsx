@@ -15,6 +15,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [savingName, setSavingName] = useState(false);
+  const [nameSaved, setNameSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -36,6 +38,21 @@ export default function ProfilePage() {
     const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = '/';
+  };
+
+  const handleSaveName = async () => {
+    if (!userName.trim()) return;
+    setSavingName(true);
+    setNameSaved(false);
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({
+      data: { full_name: userName.trim() }
+    });
+    setSavingName(false);
+    if (!error) {
+      setNameSaved(true);
+      setTimeout(() => setNameSaved(false), 3000);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,17 +195,33 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {/* Details Section */}
               <div className="flex-1 w-full space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input 
-                    type="text" 
-                    value={userName} 
-                    readOnly
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-600 focus:outline-none"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">Managed by your auth provider.</p>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={userName} 
+                      onChange={e => setUserName(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSaveName()}
+                      placeholder="Enter your full name"
+                      className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ocean-400 transition-shadow text-gray-700"
+                    />
+                    <button
+                      onClick={handleSaveName}
+                      disabled={savingName}
+                      className="flex items-center gap-1.5 px-4 py-3 bg-ocean-700 text-white text-sm font-semibold rounded-xl hover:bg-ocean-800 transition-colors disabled:opacity-60 shrink-0"
+                    >
+                      {savingName ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : nameSaved ? (
+                        <CheckCircle size={16} />
+                      ) : (
+                        <Save size={16} />
+                      )}
+                      {savingName ? 'Saving...' : nameSaved ? 'Saved!' : 'Save'}
+                    </button>
+                  </div>
                 </div>
                 
                 <div>
