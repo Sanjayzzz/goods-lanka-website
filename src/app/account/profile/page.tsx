@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
-import { User, LogOut, Home, Upload, Camera, Save, CheckCircle } from 'lucide-react';
+import { User, LogOut, Home, Upload, Camera, Save, CheckCircle, Edit2, X } from 'lucide-react';
 
 export default function ProfilePage() {
   const [userName, setUserName] = useState('');
@@ -15,8 +15,10 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
   const [savingName, setSavingName] = useState(false);
   const [nameSaved, setNameSaved] = useState(false);
+  const [tempName, setTempName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export default function ProfilePage() {
       
       setUserId(user.id);
       setUserName(user.user_metadata?.full_name ?? '');
+      setTempName(user.user_metadata?.full_name ?? '');
       setUserEmail(user.email ?? '');
       setUserAvatar(user.user_metadata?.avatar_url ?? null);
       setLoading(false);
@@ -41,18 +44,30 @@ export default function ProfilePage() {
   };
 
   const handleSaveName = async () => {
-    if (!userName.trim()) return;
+    if (!tempName.trim() || tempName.trim() === userName) {
+        setIsEditingName(false);
+        return;
+    }
     setSavingName(true);
     setNameSaved(false);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({
-      data: { full_name: userName.trim() }
+      data: { full_name: tempName.trim() }
     });
     setSavingName(false);
     if (!error) {
+      setUserName(tempName.trim());
       setNameSaved(true);
+      setIsEditingName(false);
       setTimeout(() => setNameSaved(false), 3000);
+    } else {
+        alert("Failed to update name");
     }
+  };
+
+  const handleCancelEdit = () => {
+      setTempName(userName);
+      setIsEditingName(false);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,31 +212,59 @@ export default function ProfilePage() {
 
               <div className="flex-1 w-full space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      value={userName} 
-                      onChange={e => setUserName(e.target.value)}
-                      onKeyDown={e => e.key === 'Enter' && handleSaveName()}
-                      placeholder="Enter your full name"
-                      className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ocean-400 transition-shadow text-gray-700"
-                    />
-                    <button
-                      onClick={handleSaveName}
-                      disabled={savingName}
-                      className="flex items-center gap-1.5 px-4 py-3 bg-ocean-700 text-white text-sm font-semibold rounded-xl hover:bg-ocean-800 transition-colors disabled:opacity-60 shrink-0"
-                    >
-                      {savingName ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : nameSaved ? (
-                        <CheckCircle size={16} />
-                      ) : (
-                        <Save size={16} />
+                  <div className="flex items-center justify-between mb-1">
+                      <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                      {nameSaved && (
+                          <span className="text-green-600 text-xs flex items-center gap-1">
+                              <CheckCircle size={12} /> Saved
+                          </span>
                       )}
-                      {savingName ? 'Saving...' : nameSaved ? 'Saved!' : 'Save'}
-                    </button>
                   </div>
+                  
+                  {isEditingName ? (
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={tempName} 
+                          onChange={e => setTempName(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleSaveName()}
+                          placeholder="Enter your full name"
+                          autoFocus
+                          className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ocean-400 transition-shadow text-gray-700"
+                        />
+                        <button
+                          onClick={handleCancelEdit}
+                          disabled={savingName}
+                          className="px-4 py-3 bg-gray-100 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-60 shrink-0 flex items-center justify-center"
+                        >
+                            <X size={16} />
+                        </button>
+                        <button
+                          onClick={handleSaveName}
+                          disabled={savingName}
+                          className="flex items-center gap-1.5 px-4 py-3 bg-ocean-700 text-white text-sm font-semibold rounded-xl hover:bg-ocean-800 transition-colors disabled:opacity-60 shrink-0"
+                        >
+                          {savingName ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <Save size={16} />
+                          )}
+                          {savingName ? 'Saving...' : 'Save'}
+                        </button>
+                      </div>
+                  ) : (
+                      <div className="flex gap-2">
+                        <div className="flex-1 px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-800 font-medium">
+                            {userName || 'No name set'}
+                        </div>
+                        <button
+                          onClick={() => setIsEditingName(true)}
+                          className="flex items-center gap-1.5 px-4 py-3 bg-white border border-gray-200 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors shrink-0"
+                        >
+                           <Edit2 size={16} /> Edit
+                        </button>
+                      </div>
+                  )}
                 </div>
                 
                 <div>
