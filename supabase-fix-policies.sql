@@ -4,9 +4,12 @@
 -- This allows the admin portal to update packages and destinations
 -- =====================================================
 
--- Drop existing restrictive policies on packages
+-- Drop existing restrictive or custom policies on packages
 drop policy if exists "Authenticated update packages" on packages;
 drop policy if exists "Authenticated insert packages" on packages;
+drop policy if exists "Anyone can update packages" on packages;
+drop policy if exists "Anyone can insert packages" on packages;
+drop policy if exists "Anyone can delete packages" on packages;
 
 -- Allow anyone (anon + authenticated) to update and insert packages
 -- The admin portal controls access via the login UI, so this is safe
@@ -27,6 +30,9 @@ create policy "Anyone can delete packages" on packages
 drop policy if exists "Authenticated update destinations" on destinations;
 drop policy if exists "Authenticated insert destinations" on destinations;
 drop policy if exists "Authenticated delete destinations" on destinations;
+drop policy if exists "Anyone can update destinations" on destinations;
+drop policy if exists "Anyone can insert destinations" on destinations;
+drop policy if exists "Anyone can delete destinations" on destinations;
 
 -- Allow anyone to update/insert/delete destinations
 create policy "Anyone can update destinations" on destinations
