@@ -10,9 +10,10 @@ import { Destination } from '@/data/destinations';
 interface DestinationCardProps {
   destination: Destination;
   index: number;
+  onClick?: () => void;
 }
 
-export default function DestinationCard({ destination, index }: DestinationCardProps) {
+export default function DestinationCard({ destination, index, onClick }: DestinationCardProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-30px' });
 
@@ -23,7 +24,16 @@ export default function DestinationCard({ destination, index }: DestinationCardP
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <Link href={`/destinations#${destination.slug}`} className="group block">
+      <Link
+        href={`/destinations#${destination.slug}`}
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick();
+          }
+        }}
+        className="group block"
+      >
         <div className="relative rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-500 group-hover:-translate-y-2">
           {/* Image */}
           <div className="relative h-72 sm:h-80 overflow-hidden">

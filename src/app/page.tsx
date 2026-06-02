@@ -1,16 +1,17 @@
 'use client';
 
+import { useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import HeroSection from '@/components/HeroSection';
 import SectionHeading from '@/components/SectionHeading';
 import DestinationCard from '@/components/DestinationCard';
+import DestinationModal from '@/components/DestinationModal';
 import PackageCard from '@/components/PackageCard';
 import TestimonialCarousel from '@/components/TestimonialCarousel';
 import StatsSection from '@/components/StatsSection';
-import { destinations } from '@/data/destinations';
+import { destinations, Destination } from '@/data/destinations';
 import { packages } from '@/data/packages';
 import { blogPosts } from '@/data/blog';
 import {
@@ -217,6 +218,8 @@ function NewsletterSection() {
 }
 
 export default function HomePage() {
+  const [selectedDest, setSelectedDest] = useState<Destination | null>(null);
+
   return (
     <>
       <HeroSection />
@@ -246,7 +249,14 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <SectionHeading subtitle="Destinations" title="Iconic Sri Lankan Destinations" description="Explore the most breathtaking destinations this tropical paradise has to offer." />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
-            {destinations.slice(0, 6).map((dest, i) => <DestinationCard key={dest.id} destination={dest} index={i} />)}
+            {destinations.slice(0, 6).map((dest, i) => (
+              <DestinationCard 
+                key={dest.id} 
+                destination={dest} 
+                index={i} 
+                onClick={() => setSelectedDest(dest)}
+              />
+            ))}
           </div>
           <div className="text-center">
             <Link href="/destinations" className="inline-flex items-center gap-2 px-8 py-4 border-2 border-ocean-700 text-ocean-700 font-semibold rounded-full hover:bg-ocean-700 hover:text-white transition-all duration-300 hover:scale-105">
@@ -278,6 +288,12 @@ export default function HomePage() {
       <BlogPreview />
       <CTASection />
       <NewsletterSection />
+
+      <DestinationModal 
+        destination={selectedDest} 
+        isOpen={selectedDest !== null} 
+        onClose={() => setSelectedDest(null)} 
+      />
     </>
   );
 }

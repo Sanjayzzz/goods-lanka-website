@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { destinations, Destination } from '@/data/destinations';
 import SectionHeading from '@/components/SectionHeading';
-import { Star, MapPin, ArrowRight, Search, X, Check, Compass } from 'lucide-react';
+import DestinationModal from '@/components/DestinationModal';
+import { Star, MapPin, ArrowRight, Search } from 'lucide-react';
 
 const categories = ['All', 'Cultural', 'Nature', 'Beach', 'Wildlife', 'Urban'];
 
@@ -123,7 +124,15 @@ export default function DestinationsClient() {
                   viewport={{ once: true, margin: '-20px' }}
                   transition={{ duration: 0.5, delay: i * 0.08 }}
                 >
-                  <Link href={`/destinations#${dest.slug}`} className="group block">
+                  <Link 
+                    href={`/destinations#${dest.slug}`} 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedDest(dest);
+                      window.history.pushState(null, '', `#${dest.slug}`);
+                    }}
+                    className="group block"
+                  >
                     <div className="relative rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-500 group-hover:-translate-y-2">
                       <div className="relative h-80 overflow-hidden">
                         <Image src={dest.image} alt={dest.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
@@ -174,114 +183,11 @@ export default function DestinationsClient() {
         </div>
       </section>
 
-      {/* Detail Modal */}
-      <AnimatePresence>
-        {selectedDest && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeModal}
-              className="fixed inset-0 bg-black/75 backdrop-blur-md z-45"
-            />
-
-            {/* Modal Content */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-              className="relative w-full max-w-4xl bg-white rounded-3xl shadow-2xl z-50 overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-[80vh]"
-            >
-              {/* Close Button */}
-              <button
-                onClick={closeModal}
-                className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md transition-all duration-300 shadow-lg border border-white/10"
-                aria-label="Close modal"
-              >
-                <X size={20} />
-              </button>
-
-              {/* Image Side */}
-              <div className="relative w-full md:w-1/2 h-64 md:h-auto min-h-[250px] md:min-h-[400px]">
-                <Image
-                  src={selectedDest.image}
-                  alt={selectedDest.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-tropical-500/90 text-white border border-white/20 mb-3 inline-block">
-                    {selectedDest.category}
-                  </span>
-                  <h2 className="font-[var(--font-playfair)] text-3xl sm:text-4xl font-bold mb-2">
-                    {selectedDest.name}
-                  </h2>
-                  <p className="text-white/80 text-sm italic">
-                    {selectedDest.tagline}
-                  </p>
-                </div>
-              </div>
-
-              {/* Info Side */}
-              <div className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-between overflow-y-auto no-scrollbar">
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center gap-1">
-                      <Star size={16} className="text-sunset-500 fill-sunset-500" />
-                      <span className="text-gray-900 font-bold text-sm">{selectedDest.rating}</span>
-                      <span className="text-gray-400 text-xs">({selectedDest.reviewCount.toLocaleString()} reviews)</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs">
-                      <MapPin size={14} className="text-tropical-500" />
-                      <span>Sri Lanka</span>
-                    </div>
-                  </div>
-
-                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">About the Destination</h4>
-                  <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-6">
-                    {selectedDest.description}
-                  </p>
-
-                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Key Highlights</h4>
-                  <div className="grid grid-cols-2 gap-2 mb-8">
-                    {selectedDest.highlights.map(h => (
-                      <div key={h} className="flex items-center gap-2 p-2.5 rounded-xl bg-gray-50 border border-gray-100 hover:border-tropical-200 transition-colors">
-                        <div className="w-5 h-5 rounded-full bg-tropical-50 flex items-center justify-center shrink-0">
-                          <Check size={12} className="text-tropical-600" />
-                        </div>
-                        <span className="text-gray-700 text-xs sm:text-sm font-medium">{h}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href={`/packages?cat=${getPackageCategory(selectedDest.category)}`}
-                    onClick={closeModal}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-full hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all text-sm"
-                  >
-                    <Compass size={16} /> Explore Packages
-                  </Link>
-                  <Link
-                    href={`/contact?destination=${encodeURIComponent(selectedDest.name)}`}
-                    onClick={closeModal}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-ocean-700 text-ocean-700 font-semibold rounded-full hover:bg-ocean-700 hover:text-white hover:scale-[1.02] active:scale-[0.98] transition-all text-sm text-center"
-                  >
-                    Enquire Now
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <DestinationModal 
+        destination={selectedDest} 
+        isOpen={selectedDest !== null} 
+        onClose={closeModal} 
+      />
     </main>
   );
 }
