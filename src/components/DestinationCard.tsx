@@ -72,8 +72,15 @@ export default function DestinationCard({ destination, index, onClick }: Destina
             <p className="text-white/70 text-sm line-clamp-2 mb-3">
               {destination.description}
             </p>
-            <div className="flex items-center justify-between">
-              <span className="text-white/50 text-xs">{destination.reviewCount.toLocaleString()} reviews</span>
+            <div className="flex items-center justify-between border-t border-white/20 pt-3">
+              <div>
+                {destination.price && (
+                  <p className="text-white font-bold text-[11px] leading-none mb-1">
+                    From <span className="text-tropical-400 text-sm font-black">${destination.price}</span> / day
+                  </p>
+                )}
+                <span className="text-white/50 text-[10px] sm:text-xs">{destination.reviewCount.toLocaleString()} reviews</span>
+              </div>
               <span className="flex items-center gap-1 text-tropical-400 text-sm font-medium group-hover:gap-2 transition-all">
                 Explore <ArrowRight size={14} />
               </span>

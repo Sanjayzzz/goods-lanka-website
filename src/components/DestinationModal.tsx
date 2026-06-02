@@ -100,6 +100,16 @@ export default function DestinationModal({ destination, isOpen, onClose }: Desti
                   {destination.description}
                 </p>
 
+                {destination.price && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-ocean-50 to-tropical-50/30 rounded-2xl border border-ocean-100/60 flex items-center justify-between shadow-sm">
+                    <div>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-0.5">Base Tour Price</p>
+                      <p className="text-xl sm:text-2xl font-black text-ocean-900">${destination.price} <span className="text-xs font-normal text-gray-500">/ day / person</span></p>
+                    </div>
+                    <span className="text-[10px] sm:text-xs text-tropical-700 font-semibold bg-tropical-50/80 px-3 py-1.5 rounded-full border border-tropical-100/50">Customizable Tour</span>
+                  </div>
+                )}
+
                 <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Key Highlights</h4>
                 <div className="grid grid-cols-2 gap-2 mb-8">
                   {destination.highlights.map(h => (

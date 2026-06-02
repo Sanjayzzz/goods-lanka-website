@@ -15,12 +15,32 @@ export default function DestinationsClient() {
   const [active, setActive] = useState('All');
   const [search, setSearch] = useState('');
   const [selectedDest, setSelectedDest] = useState<Destination | null>(null);
+  const [liveDestinations, setLiveDestinations] = useState(destinations);
+
+  useEffect(() => {
+    import('@/lib/supabase').then(({ createClient }) => {
+      const supabase = createClient();
+      supabase.from('destinations').select('slug, price, active').then(({ data }) => {
+        if (data) {
+          const liveMap = new Map(data.map(d => [d.slug, d]));
+          setLiveDestinations(destinations.filter(d => {
+            const live = liveMap.get(d.slug);
+            return !live || live.active;
+          }).map(d => {
+            const live = liveMap.get(d.slug);
+            if (live) return { ...d, price: Number(live.price) };
+            return d;
+          }));
+        }
+      });
+    });
+  }, []);
 
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
       if (hash) {
-        const found = destinations.find(d => d.slug.toLowerCase() === hash.toLowerCase());
+        const found = liveDestinations.find(d => d.slug.toLowerCase() === hash.toLowerCase());
         if (found) {
           setSelectedDest(found);
         }
@@ -33,7 +53,7 @@ export default function DestinationsClient() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [liveDestinations]);
 
   const closeModal = () => {
     setSelectedDest(null);
@@ -53,7 +73,7 @@ export default function DestinationsClient() {
     }
   };
 
-  const filtered = destinations.filter(d =>
+  const filtered = liveDestinations.filter(d =>
     (active === 'All' || d.category === active) &&
     d.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -157,7 +177,14 @@ export default function DestinationsClient() {
                           ))}
                         </div>
                         <div className="flex items-center justify-between border-t border-white/20 pt-3">
-                          <span className="text-white/50 text-xs">{dest.reviewCount.toLocaleString()} reviews</span>
+                          <div>
+                            {dest.price && (
+                              <p className="text-white font-bold text-[11px] leading-none mb-1">
+                                From <span className="text-tropical-400 text-sm font-black">${dest.price}</span> / day
+                              </p>
+                            )}
+                            <span className="text-white/50 text-[10px] sm:text-xs">{dest.reviewCount.toLocaleString()} reviews</span>
+                          </div>
                           <span className="flex items-center gap-1 text-tropical-400 text-sm font-semibold group-hover:gap-2 transition-all">
                             Explore <ArrowRight size={14} />
                           </span>

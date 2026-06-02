@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,6 +14,7 @@ import StatsSection from '@/components/StatsSection';
 import { destinations, Destination } from '@/data/destinations';
 import { packages } from '@/data/packages';
 import { blogPosts } from '@/data/blog';
+import { createClient } from '@/lib/supabase';
 import {
   Shield, Award, Headphones, Heart, Camera, Mountain, Waves, TreePine, Binoculars, Compass,
   ArrowRight, Star, Clock, Send
@@ -219,6 +220,42 @@ function NewsletterSection() {
 
 export default function HomePage() {
   const [selectedDest, setSelectedDest] = useState<Destination | null>(null);
+  const [livePackages, setLivePackages] = useState(packages);
+  const [liveDestinations, setLiveDestinations] = useState(destinations);
+
+  useEffect(() => {
+    const supabase = createClient();
+    
+    // Load packages
+    supabase.from('packages').select('slug, price, active').then(({ data }) => {
+      if (data) {
+        const liveMap = new Map(data.map(p => [p.slug, p]));
+        setLivePackages(packages.filter(p => {
+          const live = liveMap.get(p.slug);
+          return !live || live.active;
+        }).map(p => {
+          const live = liveMap.get(p.slug);
+          if (live) return { ...p, price: Number(live.price) };
+          return p;
+        }));
+      }
+    });
+
+    // Load destinations
+    supabase.from('destinations').select('slug, price, active').then(({ data }) => {
+      if (data) {
+        const liveMap = new Map(data.map(d => [d.slug, d]));
+        setLiveDestinations(destinations.filter(d => {
+          const live = liveMap.get(d.slug);
+          return !live || live.active;
+        }).map(d => {
+          const live = liveMap.get(d.slug);
+          if (live) return { ...d, price: Number(live.price) };
+          return d;
+        }));
+      }
+    });
+  }, []);
 
   return (
     <>
@@ -249,7 +286,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <SectionHeading subtitle="Destinations" title="Iconic Sri Lankan Destinations" description="Explore the most breathtaking destinations this tropical paradise has to offer." />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
-            {destinations.slice(0, 6).map((dest, i) => (
+            {liveDestinations.slice(0, 6).map((dest, i) => (
               <DestinationCard 
                 key={dest.id} 
                 destination={dest} 
@@ -271,7 +308,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <SectionHeading subtitle="Tour Packages" title="Most Popular Tours" description="Hand-crafted itineraries designed to give you the ultimate Sri Lankan experience." />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12">
-            {packages.slice(0, 6).map((pkg, i) => <PackageCard key={pkg.id} pkg={pkg} index={i} />)}
+            {livePackages.slice(0, 6).map((pkg, i) => <PackageCard key={pkg.id} pkg={pkg} index={i} />)}
           </div>
           <div className="text-center">
             <Link href="/packages" className="inline-flex items-center gap-2 px-8 py-4 border-2 border-ocean-700 text-ocean-700 font-semibold rounded-full hover:bg-ocean-700 hover:text-white transition-all duration-300 hover:scale-105">

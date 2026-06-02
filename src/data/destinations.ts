@@ -9,6 +9,7 @@ export interface Destination {
   reviewCount: number;
   highlights: string[];
   category: string;
+  price?: number;
 }
 
 export const destinations: Destination[] = [

@@ -12,6 +12,7 @@ const steps = ['Select Package', 'Travel Details', 'Personal Info', 'Confirmatio
 
 export default function BookingPage() {
   const [step, setStep] = useState(0);
+  const [livePackages, setLivePackages] = useState(packages);
   const [selectedPkg, setSelectedPkg] = useState(packages[0].id);
   const [guests, setGuests] = useState(2);
   const [date, setDate] = useState('');
@@ -38,11 +39,42 @@ export default function BookingPage() {
         email: user.email ?? '',
       }));
       setAuthChecking(false);
+
+      // Load live packages
+      const { data: pkgs } = await supabase.from('packages').select('id, name, slug, price, original_price, active');
+      if (pkgs) {
+        const liveMap = new Map(pkgs.map(p => [p.slug, p]));
+        const updatedPkgs = packages.filter(p => {
+          const live = liveMap.get(p.slug);
+          return !live || live.active;
+        }).map(p => {
+          const live = liveMap.get(p.slug);
+          if (live) {
+            return {
+              ...p,
+              id: live.id,
+              price: Number(live.price),
+              originalPrice: Number(live.original_price ?? live.price),
+            };
+          }
+          return p;
+        });
+        setLivePackages(updatedPkgs);
+        
+        // Auto-update selectedPkg if it matches the static one but needs db UUID
+        const currentPkg = packages.find(p => p.id === selectedPkg);
+        if (currentPkg) {
+          const matchingLive = updatedPkgs.find(p => p.slug === currentPkg.slug);
+          if (matchingLive) {
+            setSelectedPkg(matchingLive.id);
+          }
+        }
+      }
     };
     checkAuth();
   }, []);
 
-  const pkg = packages.find(p => p.id === selectedPkg) || packages[0];
+  const pkg = livePackages.find(p => p.id === selectedPkg) || livePackages[0];
   const total = pkg.price * guests;
 
   if (authChecking) return (
@@ -149,7 +181,7 @@ export default function BookingPage() {
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Choose a Package</h2>
                     <div className="space-y-3">
-                      {packages.map(p => (
+                      {livePackages.map(p => (
                         <label key={p.id} className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedPkg === p.id ? 'border-tropical-500 bg-tropical-50' : 'border-gray-100 hover:border-gray-200'}`}>
                           <input type="radio" name="package" value={p.id} checked={selectedPkg === p.id} onChange={() => setSelectedPkg(p.id)} className="hidden" />
                           <div className="relative w-16 h-12 rounded-xl overflow-hidden shrink-0">
