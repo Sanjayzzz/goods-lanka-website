@@ -14,6 +14,7 @@ interface Review {
   id: string;
   package_slug: string;
   author_name: string;
+  avatar_url?: string;
   rating: number;
   comment: string;
   created_at: string;
@@ -62,9 +63,14 @@ export default function ReviewsSection({ packageSlug, packageName }: Props) {
     setError('');
     setSubmitting(true);
 
+    // Check for auth user
+    const { data: { user } } = await supabase.auth.getUser();
+    const avatarUrl = user?.user_metadata?.avatar_url || null;
+
     const { error: insertError } = await supabase.from('reviews').insert({
       package_slug: packageSlug,
       author_name: name.trim(),
+      avatar_url: avatarUrl,
       rating,
       comment: comment.trim(),
     });
@@ -228,8 +234,12 @@ export default function ReviewsSection({ packageSlug, packageName }: Props) {
                   transition={{ delay: i * 0.05 }}
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-ocean-600 to-tropical-500 flex items-center justify-center text-white shrink-0">
-                      <User size={16} />
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-ocean-600 to-tropical-500 flex items-center justify-center text-white shrink-0 overflow-hidden">
+                      {review.avatar_url ? (
+                        <img src={review.avatar_url} alt={review.author_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <User size={16} />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">

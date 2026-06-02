@@ -3,6 +3,7 @@ export interface Testimonial {
   name: string;
   country: string;
   avatar: string;
+  avatar_url?: string;
   rating: number;
   title: string;
   review: string;

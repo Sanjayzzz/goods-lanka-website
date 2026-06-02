@@ -35,6 +35,7 @@ export default function TestimonialCarousel() {
       name: r.author_name,
       country: 'Verified Guest',
       avatar: r.author_name.substring(0, 2).toUpperCase(),
+      avatar_url: r.avatar_url,
       rating: r.rating,
       title: r.rating === 5 ? 'Excellent Experience' : 'Great Service',
       review: r.comment,
@@ -62,9 +63,15 @@ export default function TestimonialCarousel() {
     setIsSubmitting(true);
     
     const supabase = createClient();
+    
+    // Check if user is logged in to grab their avatar
+    const { data: { user } } = await supabase.auth.getUser();
+    const avatarUrl = user?.user_metadata?.avatar_url || null;
+
     const { error } = await supabase.from('reviews').insert({
       package_slug: 'general',
       author_name: name,
+      avatar_url: avatarUrl,
       rating,
       comment
     });
@@ -142,8 +149,12 @@ export default function TestimonialCarousel() {
 
               {/* Author */}
               <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-ocean-500 to-tropical-500 flex items-center justify-center text-white font-bold text-lg mb-3">
-                  {t.avatar}
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-ocean-500 to-tropical-500 flex items-center justify-center text-white font-bold text-lg mb-3 overflow-hidden border-2 border-ocean-100">
+                  {t.avatar_url ? (
+                    <img src={t.avatar_url} alt={t.name} className="w-full h-full object-cover" />
+                  ) : (
+                    t.avatar
+                  )}
                 </div>
                 <h4 className="font-semibold text-ocean-900">{t.name}</h4>
                 <p className="text-gray-400 text-sm">{t.country} • {t.tourPackage}</p>

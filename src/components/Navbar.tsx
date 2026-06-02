@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Phone, Mail, MapPin, User, CalendarCheck, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, Phone, Mail, MapPin, User, CalendarCheck, LogOut, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 
 const navLinks = [
@@ -43,17 +43,29 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserName(user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Account');
-      else setUserName(null);
+      if (user) {
+        setUserName(user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Account');
+        setUserAvatar(user.user_metadata?.avatar_url ?? null);
+      } else {
+        setUserName(null);
+        setUserAvatar(null);
+      }
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       const u = session?.user;
-      setUserName(u ? (u.user_metadata?.full_name ?? u.email?.split('@')[0] ?? 'Account') : null);
+      if (u) {
+        setUserName(u.user_metadata?.full_name ?? u.email?.split('@')[0] ?? 'Account');
+        setUserAvatar(u.user_metadata?.avatar_url ?? null);
+      } else {
+        setUserName(null);
+        setUserAvatar(null);
+      }
     });
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -187,9 +199,15 @@ export default function Navbar() {
                     className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
                       scrolled ? 'text-ocean-700 hover:bg-ocean-50' : 'text-white/90 hover:bg-white/10'
                     }`}>
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-tropical-500 to-ocean-600 flex items-center justify-center text-white text-xs font-bold uppercase">
-                      {userName[0]}
-                    </div>
+                    {userAvatar ? (
+                      <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-white/20">
+                        <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-tropical-500 to-ocean-600 flex items-center justify-center text-white text-xs font-bold uppercase shrink-0">
+                        {userName[0]}
+                      </div>
+                    )}
                     <span className="hidden lg:inline">{userName}</span>
                     <ChevronDown size={13} className={`transition-transform ${accountDropdown ? 'rotate-180' : ''}`} />
                   </button>
@@ -205,6 +223,10 @@ export default function Navbar() {
                         <Link href="/account/my-bookings"
                           className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-ocean-50 hover:text-ocean-700 transition-colors">
                           <CalendarCheck size={15} /> My Bookings
+                        </Link>
+                        <Link href="/account/profile"
+                          className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-ocean-50 hover:text-ocean-700 transition-colors border-t border-gray-50">
+                          <Settings size={15} /> Profile Settings
                         </Link>
                         <div className="border-t border-gray-100 my-1" />
                         <button

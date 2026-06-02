@@ -156,6 +156,7 @@ create table if not exists reviews (
   id uuid primary key default gen_random_uuid(),
   package_slug text not null,
   author_name text not null,
+  avatar_url text,
   rating integer not null check (rating >= 1 and rating <= 5),
   comment text not null,
   created_at timestamptz default now()
@@ -165,10 +166,34 @@ create table if not exists reviews (
 alter table reviews enable row level security;
 
 -- Create policies to allow public reading and inserting of reviews
+drop policy if exists "Allow public read access to reviews" on reviews;
 create policy "Allow public read access to reviews"
   on reviews for select
   using (true);
 
+drop policy if exists "Allow public insert access to reviews" on reviews;
 create policy "Allow public insert access to reviews"
   on reviews for insert
   with check (true);
+
+-- =====================================================
+-- 7. STORAGE BUCKET FOR AVATARS
+-- =====================================================
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Avatar images are publicly accessible" on storage.objects;
+create policy "Avatar images are publicly accessible"
+  on storage.objects for select
+  using ( bucket_id = 'avatars' );
+
+drop policy if exists "Users can upload their own avatars" on storage.objects;
+create policy "Users can upload their own avatars"
+  on storage.objects for insert
+  with check ( bucket_id = 'avatars' and auth.role() = 'authenticated' );
+
+drop policy if exists "Users can update their own avatars" on storage.objects;
+create policy "Users can update their own avatars"
+  on storage.objects for update
+  using ( bucket_id = 'avatars' and auth.role() = 'authenticated' );
