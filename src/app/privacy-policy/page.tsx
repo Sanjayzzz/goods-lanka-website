@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Good's Lanka Tours & Travels",
-  description: "Read the privacy policy for Good's Lanka Tours & Travels.",
+  title: "Privacy Policy | GODS LANKA Tours & Travels",
+  description: "Read the privacy policy for GODS LANKA Tours & Travels.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -49,16 +49,16 @@ export default function PrivacyPolicyPage() {
 
           <section>
             <h2 className="font-[var(--font-playfair)] text-xl font-bold text-ocean-900 mb-3">6. Your Rights</h2>
-            <p>You have the right to access, update, or delete your personal data at any time. You can also opt out of marketing communications. Contact us at privacy@goodslanka.com for any data-related requests.</p>
+            <p>You have the right to access, update, or delete your personal data at any time. You can also opt out of marketing communications. Contact us at privacy@godslanka.com for any data-related requests.</p>
           </section>
 
           <section>
             <h2 className="font-[var(--font-playfair)] text-xl font-bold text-ocean-900 mb-3">7. Contact Us</h2>
             <p>For any privacy-related questions, contact us at:</p>
             <p className="mt-2">
-              <strong>Good&apos;s Lanka Tours & Travels</strong><br />
+              <strong>GODS LANKA Tours & Travels</strong><br />
               42 Temple Road, Colombo 03, Sri Lanka<br />
-              Email: privacy@goodslanka.com<br />
+              Email: privacy@godslanka.com<br />
               Phone: +94 77 726 6044
             </p>
           </section>

@@ -1,5 +1,5 @@
 -- =====================================================
--- Good's Lanka Admin Portal — Supabase Setup SQL
+-- GODS LANKA Admin Portal — Supabase Setup SQL
 -- Run this entire script in your Supabase SQL Editor
 -- =====================================================
 
@@ -148,3 +148,27 @@ on conflict (slug) do nothing;
 
 -- INSERT INTO admin_users (id, email, full_name, role)
 -- VALUES ('YOUR_AUTH_USER_UUID', 'your@email.com', 'Your Name', 'super_admin');
+
+-- =====================================================
+-- 6. REVIEWS TABLE (ADDED FOR TRAVELLER REVIEWS)
+-- =====================================================
+create table if not exists reviews (
+  id uuid primary key default gen_random_uuid(),
+  package_slug text not null,
+  author_name text not null,
+  rating integer not null check (rating >= 1 and rating <= 5),
+  comment text not null,
+  created_at timestamptz default now()
+);
+
+-- Enable RLS
+alter table reviews enable row level security;
+
+-- Create policies to allow public reading and inserting of reviews
+create policy "Allow public read access to reviews"
+  on reviews for select
+  using (true);
+
+create policy "Allow public insert access to reviews"
+  on reviews for insert
+  with check (true);

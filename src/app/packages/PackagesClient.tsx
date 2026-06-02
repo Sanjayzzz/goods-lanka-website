@@ -7,32 +7,55 @@ import { packages } from '@/data/packages';
 import PackageCard from '@/components/PackageCard';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, Users, Clock, MapPin, ChevronDown } from 'lucide-react';
 
 const categories = ['All', 'Cultural', 'Beach', 'Adventure', 'Wildlife', 'Luxury'];
+const durationBuckets = [
+  { label: '0–3 Nights', min: 0, max: 3 },
+  { label: '4–5 Nights', min: 4, max: 5 },
+  { label: '6–7 Nights', min: 6, max: 7 },
+  { label: '8+ Nights', min: 8, max: 999 },
+];
 
 function PackagesContent() {
   const searchParams = useSearchParams();
   const initialCat = searchParams.get('cat') || 'All';
+
   const [active, setActive] = useState(initialCat);
   const [sort, setSort] = useState('recommended');
+  const [passengers, setPassengers] = useState(0); // 0 = any
+  const [durationFilter, setDurationFilter] = useState<number | null>(null); // index into durationBuckets
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const cat = searchParams.get('cat');
     if (cat) setActive(cat);
   }, [searchParams]);
 
-  let filtered = packages.filter(p => active === 'All' || p.category === active);
+  let filtered = packages.filter(p => {
+    if (active !== 'All' && p.category !== active) return false;
+    if (passengers > 0 && p.maxGuests < passengers) return false;
+    if (durationFilter !== null) {
+      const bucket = durationBuckets[durationFilter];
+      if (p.nights < bucket.min || p.nights > bucket.max) return false;
+    }
+    return true;
+  });
+
   if (sort === 'price-asc') filtered = [...filtered].sort((a, b) => a.price - b.price);
   if (sort === 'price-desc') filtered = [...filtered].sort((a, b) => b.price - a.price);
   if (sort === 'rating') filtered = [...filtered].sort((a, b) => b.rating - a.rating);
 
+  const hasActiveFilters = active !== 'All' || passengers > 0 || durationFilter !== null;
+
   return (
     <>
-      {/* Filters Bar */}
+      {/* Sticky Filter Bar */}
       <section className="sticky top-16 lg:top-[36px] z-30 bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+
+          {/* Top row: Category pills + Sort */}
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between mb-3">
             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
               {categories.map(cat => (
                 <button key={cat} onClick={() => setActive(cat)}
@@ -41,10 +64,16 @@ function PackagesContent() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <SlidersHorizontal size={16} className="text-gray-400" />
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => setShowFilters(f => !f)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${showFilters || hasActiveFilters ? 'bg-ocean-700 text-white border-ocean-700' : 'border-gray-200 text-gray-600 hover:border-ocean-300'}`}>
+                <SlidersHorizontal size={15} />
+                Filters
+                {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-tropical-400" />}
+              </button>
               <select value={sort} onChange={e => setSort(e.target.value)}
-                className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-tropical-400">
+                className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-tropical-400 bg-white">
                 <option value="recommended">Recommended</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
@@ -52,16 +81,94 @@ function PackagesContent() {
               </select>
             </div>
           </div>
+
+          {/* Expandable advanced filters */}
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="border-t border-gray-100 pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+              {/* Duration Filter */}
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <Clock size={13} /> Duration
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {durationBuckets.map((bucket, i) => (
+                    <button key={i} onClick={() => setDurationFilter(durationFilter === i ? null : i)}
+                      className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-all ${durationFilter === i ? 'bg-tropical-600 text-white border-tropical-600' : 'border-gray-200 text-gray-600 hover:border-tropical-400'}`}>
+                      {bucket.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Passengers Filter */}
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <Users size={13} /> Passengers
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[0, 1, 2, 3, 4, 5, 6].map(n => (
+                    <button key={n} onClick={() => setPassengers(n)}
+                      className={`w-10 h-10 rounded-full text-sm font-semibold border transition-all ${passengers === n ? 'bg-tropical-600 text-white border-tropical-600' : 'border-gray-200 text-gray-600 hover:border-tropical-400'}`}>
+                      {n === 0 ? 'Any' : n === 6 ? '6+' : n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Destination / Category */}
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                  <MapPin size={13} /> Destination Type
+                </p>
+                <div className="relative">
+                  <select value={active} onChange={e => setActive(e.target.value)}
+                    className="w-full text-sm border border-gray-200 rounded-xl px-4 py-2.5 pr-9 focus:outline-none focus:ring-2 focus:ring-tropical-400 bg-white appearance-none">
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat === 'All' ? 'All Destinations' : cat}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Duration quick-pills always visible when filters hidden */}
+          {!showFilters && (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              {durationBuckets.map((bucket, i) => (
+                <button key={i} onClick={() => setDurationFilter(durationFilter === i ? null : i)}
+                  className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${durationFilter === i ? 'bg-tropical-600 text-white border-tropical-600' : 'border-gray-200 text-gray-500 hover:border-tropical-400'}`}>
+                  {bucket.label}
+                </button>
+              ))}
+              {passengers === 0 ? null : (
+                <span className="px-4 py-1.5 rounded-full text-xs font-semibold bg-ocean-100 text-ocean-700 border border-ocean-200">
+                  {passengers === 6 ? '6+' : passengers} passenger{passengers !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Packages Grid */}
       <section className="py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-gray-400 text-sm mb-8">{filtered.length} packages found</p>
+          <p className="text-gray-400 text-sm mb-8">
+            {filtered.length} package{filtered.length !== 1 ? 's' : ''} found
+            {hasActiveFilters && <button onClick={() => { setActive('All'); setPassengers(0); setDurationFilter(null); }} className="ml-3 text-tropical-600 font-semibold hover:underline">Clear filters</button>}
+          </p>
           {filtered.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-gray-400 text-lg">No packages in this category yet. Check back soon!</p>
+              <p className="text-gray-400 text-lg mb-3">No packages match your filters.</p>
+              <button onClick={() => { setActive('All'); setPassengers(0); setDurationFilter(null); }}
+                className="text-tropical-600 font-semibold hover:underline">Clear all filters</button>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">

@@ -4,10 +4,13 @@ export interface Package {
   slug: string;
   tagline: string;
   description: string;
+  tourDescription: string;
   image: string;
   images: string[];
   duration: string;
+  nights: number;
   groupSize: string;
+  maxGuests: number;
   price: number;
   originalPrice: number;
   rating: number;
@@ -15,6 +18,7 @@ export interface Package {
   category: string;
   highlights: string[];
   included: string[];
+  excluded: string[];
   itinerary: { day: number; title: string; description: string }[];
 }
 
@@ -25,6 +29,7 @@ export const packages: Package[] = [
     slug: "cultural-triangle-explorer",
     tagline: "Uncover Ancient Kingdoms",
     description: "Journey through Sri Lanka's ancient cities — from the rock fortress of Sigiriya to the sacred city of Kandy. Experience UNESCO World Heritage Sites, ancient temples, and the rich cultural tapestry that makes Sri Lanka unique.",
+    tourDescription: "This extraordinary 7-day journey takes you deep into the heart of Sri Lanka's legendary Cultural Triangle — a treasure chest of ancient civilisations that flourished over 2,000 years ago. You'll climb the breathtaking Sigiriya Rock Fortress, a 5th-century palace perched 200 metres above the surrounding jungle, explore the ancient cave temples of Dambulla adorned with centuries-old frescoes, and cycle through the sprawling ruins of Polonnaruwa. The journey culminates in Kandy, Sri Lanka's last royal capital, where you'll witness the sacred Temple of the Tooth Relic and experience a traditional Kandyan dance performance. Throughout the trip, your private English-speaking guide brings history to life, and hand-picked accommodation ensures comfort after each day of discovery.",
     image: "https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80",
     images: [
       "https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80",
@@ -32,14 +37,34 @@ export const packages: Package[] = [
       "https://images.unsplash.com/photo-1621393614326-2f9ed389ce02?w=800&q=80"
     ],
     duration: "7 Days / 6 Nights",
+    nights: 6,
     groupSize: "2-12 People",
+    maxGuests: 12,
     price: 899,
     originalPrice: 1199,
     rating: 4.9,
     reviewCount: 342,
     category: "Cultural",
     highlights: ["Sigiriya Rock Fortress", "Temple of the Tooth", "Dambulla Cave Temple", "Polonnaruwa Ruins", "Traditional Dance Show", "Spice Garden Visit"],
-    included: ["Airport transfers", "Accommodation", "Breakfast & dinner", "English-speaking guide", "Entrance fees", "AC vehicle"],
+    included: [
+      "English Speaking Private Driver Guide",
+      "Airport Pick-up and Drop Off",
+      "Activities & Attractions Entrance Fees",
+      "Air-conditioned Private Vehicle",
+      "Unlimited Wi-Fi (inside the vehicle)",
+      "6 Nights Accommodation (Breakfast included)",
+      "Daily Breakfast & Dinner",
+      "All Government Taxes & Service Charges"
+    ],
+    excluded: [
+      "Personal Expenses (Laundry, Telephone calls, Tips)",
+      "Extra Excursions not mentioned in itinerary",
+      "Lunch / Snacks (unless specified)",
+      "Travel Insurance",
+      "International Flights",
+      "Camera / Video Entry Fees at certain sites",
+      "Alcoholic Beverages"
+    ],
     itinerary: [
       { day: 1, title: "Arrival in Colombo", description: "Airport pickup and transfer to Negombo. Evening beach walk and welcome dinner." },
       { day: 2, title: "Dambulla & Sigiriya", description: "Visit Dambulla Cave Temple, then climb the iconic Sigiriya Rock Fortress." },
@@ -56,6 +81,7 @@ export const packages: Package[] = [
     slug: "tropical-beach-escape",
     tagline: "Sun, Sand & Serenity",
     description: "Relax on Sri Lanka's most pristine beaches. From the whale-watching paradise of Mirissa to the colonial charm of Galle, this coastal journey combines luxury relaxation with thrilling ocean adventures.",
+    tourDescription: "Escape to the sun-drenched southern coast of Sri Lanka on this 5-day paradise retreat. Begin in Bentota, where crystal-clear lagoon waters invite you to jet-ski, snorkel, and ride banana boats. Drive along the scenic coastal highway to the UNESCO-listed Galle Fort, where Dutch colonial ramparts meet boutique cafés and artisan shops. Continue to Mirissa — Sri Lanka's most celebrated beach town — for a sunrise whale watching expedition where blue whales and spinner dolphins put on a spectacular show. Your days here are filled with golden sands, swaying palms, and spectacular Indian Ocean sunsets. Accommodation is carefully chosen for each destination — oceanfront resorts and charming boutique guesthouses that put you right at the heart of the coast.",
     image: "https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80",
     images: [
       "https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80",
@@ -63,14 +89,33 @@ export const packages: Package[] = [
       "https://images.unsplash.com/photo-1704797390682-76479a29dc9a?w=800&q=80"
     ],
     duration: "5 Days / 4 Nights",
+    nights: 4,
     groupSize: "2-8 People",
+    maxGuests: 8,
     price: 649,
     originalPrice: 849,
     rating: 4.8,
     reviewCount: 289,
     category: "Beach",
     highlights: ["Mirissa Beach", "Whale Watching", "Galle Fort Tour", "Bentota Water Sports", "Coconut Tree Hill", "Sunset Cruise"],
-    included: ["Beach resort stay", "Breakfast", "Whale watching trip", "Water sports session", "Airport transfers", "AC vehicle"],
+    included: [
+      "English Speaking Private Driver Guide",
+      "Airport Pick-up and Drop Off",
+      "Whale Watching Boat Trip",
+      "Water Sports Session (Jet Ski, Banana Boat, Snorkeling)",
+      "Air-conditioned Private Vehicle",
+      "Unlimited Wi-Fi (inside the vehicle)",
+      "4 Nights Beach Resort Accommodation",
+      "Daily Breakfast"
+    ],
+    excluded: [
+      "Personal Expenses (Laundry, Telephone calls, Tips)",
+      "Lunch / Dinner / Snacks",
+      "Extra Excursions not mentioned in itinerary",
+      "Travel Insurance",
+      "International Flights",
+      "Alcoholic Beverages"
+    ],
     itinerary: [
       { day: 1, title: "Arrival at Bentota", description: "Transfer to beach resort. Evening sunset on the beach." },
       { day: 2, title: "Bentota Adventures", description: "Morning water sports — jet ski, banana boat, snorkeling." },
@@ -85,20 +130,40 @@ export const packages: Package[] = [
     slug: "hill-country-adventure",
     tagline: "Misty Mountains & Tea Trails",
     description: "Traverse the breathtaking highlands of Sri Lanka. Trek through emerald tea plantations, cross the legendary Nine Arch Bridge, and experience the famous train journey through misty mountain passes.",
+    tourDescription: "Sri Lanka's hill country is unlike anywhere else on Earth — a world of rolling emerald tea estates, mist-draped peaks, cascading waterfalls, and one of the world's most scenic train journeys. This 6-day adventure begins in Kandy and climbs steadily into the clouds, passing through Nuwara Eliya (known as 'Little England' for its colonial-era charm) before arriving in Ella, the jewel of the highlands. You'll trek to World's End at Horton Plains for a sunrise that reveals a sheer 880-metre drop, photograph the iconic Nine Arch Bridge as the vintage blue train passes overhead, and hike to Ravana Falls. Expert guides lead every trek, and you'll sleep in beautifully located boutique hotels and tea estate bungalows that place you right in the heart of the landscape.",
     image: "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80",
     images: [
       "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80",
       "https://images.unsplash.com/photo-1559038300-07cb5d6c3d27?w=800&q=80"
     ],
     duration: "6 Days / 5 Nights",
+    nights: 5,
     groupSize: "2-10 People",
+    maxGuests: 10,
     price: 749,
     originalPrice: 999,
     rating: 4.9,
     reviewCount: 412,
     category: "Adventure",
     highlights: ["Ella Train Journey", "Nine Arch Bridge", "Little Adam's Peak", "Tea Plantation Tour", "Ravana Falls", "Horton Plains"],
-    included: ["Boutique hotel stays", "Breakfast & lunch", "Train tickets", "Trekking guide", "Entrance fees", "AC vehicle"],
+    included: [
+      "English Speaking Private Driver Guide",
+      "Airport Pick-up and Drop Off",
+      "Scenic Train Tickets (Kandy to Ella)",
+      "Activities & Attractions Entrance Fees",
+      "Air-conditioned Private Vehicle",
+      "Unlimited Wi-Fi (inside the vehicle)",
+      "5 Nights Boutique Hotel Accommodation",
+      "Daily Breakfast & Lunch"
+    ],
+    excluded: [
+      "Personal Expenses (Laundry, Telephone calls, Tips)",
+      "Dinner / Snacks (unless specified)",
+      "Extra Excursions not mentioned in itinerary",
+      "Travel Insurance",
+      "International Flights",
+      "Camera / Video Entry Fees at certain sites"
+    ],
     itinerary: [
       { day: 1, title: "Kandy Arrival", description: "Arrive in Kandy, visit the botanical gardens." },
       { day: 2, title: "Train to Nuwara Eliya", description: "Scenic train ride through tea country to Nuwara Eliya." },
@@ -114,20 +179,40 @@ export const packages: Package[] = [
     slug: "wildlife-safari-expedition",
     tagline: "Into the Wild",
     description: "Embark on an extraordinary wildlife adventure. Track leopards in Yala, observe elephants in Udawalawe, and discover exotic birdlife — Sri Lanka's wilderness will leave you speechless.",
+    tourDescription: "Sri Lanka has one of the highest concentrations of leopards in the world, and this 5-day safari expedition gives you the best chance to witness them in the wild. Your journey begins at Udawalawe National Park, home to over 500 wild elephants that roam freely in vast open grasslands — making for spectacular sightings from the very first evening. From there, you venture to Yala National Park, Sri Lanka's most famous wildlife reserve, where early morning and dusk jeep drives through diverse ecosystems reveal leopards, sloth bears, crocodiles, and hundreds of bird species. Expert naturalist guides accompany every game drive, enriching every sighting with their deep knowledge of animal behaviour and ecology. Comfortable safari lodges keep you close to the action.",
     image: "https://images.unsplash.com/photo-1533484482814-3fe2d922be89?w=800&q=80",
     images: [
       "https://images.unsplash.com/photo-1533484482814-3fe2d922be89?w=800&q=80",
       "https://images.unsplash.com/photo-1612862862126-865765df2ded?w=800&q=80"
     ],
     duration: "5 Days / 4 Nights",
+    nights: 4,
     groupSize: "2-6 People",
+    maxGuests: 6,
     price: 799,
     originalPrice: 1049,
     rating: 4.8,
     reviewCount: 256,
     category: "Wildlife",
     highlights: ["Yala Leopard Safari", "Udawalawe Elephants", "Bundala Bird Sanctuary", "Camping Experience", "Night Safari", "Wildlife Photography"],
-    included: ["Safari lodge stays", "All meals", "4x4 jeep safaris", "Park entrance fees", "Expert naturalist guide", "Airport transfers"],
+    included: [
+      "English Speaking Expert Naturalist Guide",
+      "Airport Pick-up and Drop Off",
+      "4x4 Jeep Safari Drives (all included)",
+      "National Park Entrance Fees",
+      "Air-conditioned Private Vehicle (transfers)",
+      "Unlimited Wi-Fi (inside the vehicle)",
+      "4 Nights Safari Lodge Accommodation",
+      "All Meals (Breakfast, Lunch & Dinner)"
+    ],
+    excluded: [
+      "Personal Expenses (Laundry, Telephone calls, Tips)",
+      "Extra Excursions not mentioned in itinerary",
+      "Alcoholic Beverages",
+      "Travel Insurance",
+      "International Flights",
+      "Camera / Video Permits inside parks"
+    ],
     itinerary: [
       { day: 1, title: "Arrival", description: "Transfer to Udawalawe, evening elephant sighting." },
       { day: 2, title: "Udawalawe Safari", description: "Full-day safari in Udawalawe National Park." },
@@ -142,20 +227,42 @@ export const packages: Package[] = [
     slug: "luxury-honeymoon-retreat",
     tagline: "Romance in Paradise",
     description: "Celebrate love in the most romantic settings Sri Lanka has to offer. Private villas, candlelit dinners on the beach, couples' spa treatments, and sunset cruises — pure tropical romance.",
+    tourDescription: "Sri Lanka was made for romance. This ultra-luxurious 8-day honeymoon itinerary is crafted exclusively for couples who want the very best — and deserve nothing less. Wake up in a private ocean-view villa, where breakfast is served on your private terrace to the sound of waves. Your personal concierge arranges a candlelit dinner on the beach, a couple's massage at a world-class spa, and a golden-hour sunset cruise along the southern coast. Visit the romance of Galle Fort at dusk, journey through fragrant tea estates in the highlands, and end your trip with a private visit to a hidden waterfall deep in the jungle. Every detail — from rose-petal turndowns to private transfers in a premium vehicle — is arranged with love and care by our dedicated honeymoon team.",
     image: "https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80",
     images: [
       "https://images.unsplash.com/photo-1522310193626-604c5ef8be43?w=800&q=80",
       "https://images.unsplash.com/photo-1552733407-5d5c46c3bb3b?w=800&q=80"
     ],
     duration: "8 Days / 7 Nights",
+    nights: 7,
     groupSize: "2 People",
+    maxGuests: 2,
     price: 1499,
     originalPrice: 1999,
     rating: 5.0,
     reviewCount: 178,
     category: "Luxury",
     highlights: ["Private Villa Stay", "Couples Spa", "Beach Candlelit Dinner", "Sunset Cruise", "Hot Air Balloon", "Private Waterfall Visit"],
-    included: ["5-star accommodation", "All meals", "Private chauffeur", "Spa treatments", "Romantic dinner setup", "All excursions"],
+    included: [
+      "English Speaking Private Chauffeur Guide",
+      "Airport Pick-up and Drop Off (VIP)",
+      "Couples Spa Treatment (1 session)",
+      "Romantic Candlelit Beach Dinner Setup",
+      "Sunset Cruise",
+      "Activities & Attractions Entrance Fees",
+      "Air-conditioned Luxury Private Vehicle",
+      "Unlimited Wi-Fi (inside the vehicle)",
+      "7 Nights 5-Star / Boutique Villa Accommodation",
+      "All Meals (Breakfast, Lunch & Dinner)"
+    ],
+    excluded: [
+      "Personal Expenses (Laundry, Telephone calls, Tips)",
+      "Extra Excursions not mentioned in itinerary",
+      "Alcoholic Beverages & Champagne (on request, charged separately)",
+      "Travel Insurance",
+      "International Flights",
+      "Hot Air Balloon Ride (available as paid add-on)"
+    ],
     itinerary: [
       { day: 1, title: "Welcome to Paradise", description: "VIP airport pickup, transfer to luxury beach villa." },
       { day: 2, title: "Beach Bliss", description: "Private beach day, couples spa, sunset cocktails." },
@@ -173,6 +280,7 @@ export const packages: Package[] = [
     slug: "complete-sri-lanka-discovery",
     tagline: "The Ultimate Journey",
     description: "Experience everything Sri Lanka has to offer in one incredible journey. From ancient ruins to pristine beaches, misty mountains to wildlife safaris — this is the definitive Sri Lankan adventure.",
+    tourDescription: "If you want to see everything Sri Lanka has to offer — and do it in style — this is the trip. Our flagship 14-day Complete Discovery itinerary is the most comprehensive Sri Lanka tour available, carefully designed to show you the island's iconic landmarks while leaving time to breathe it all in. You'll start in Colombo, travel north to the ancient cities of Anuradhapura, scale Sigiriya Rock, cycle through Polonnaruwa, worship at the Temple of the Tooth in Kandy, ride the legendary train through the hill country, hike in Ella, go on safari in Yala, swim in Mirissa, stroll the ramparts of Galle Fort, and splash into Bentota's lagoon. This two-week odyssey covers every major region of the island — cultural, coastal, highland, and wild — and is the ultimate Sri Lanka bucket-list adventure.",
     image: "https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=800&q=80",
     images: [
       "https://images.unsplash.com/photo-1623595289196-007a22dd8560?w=800&q=80",
@@ -180,14 +288,36 @@ export const packages: Package[] = [
       "https://images.unsplash.com/photo-1566296314736-6eaac1ca0cb9?w=800&q=80"
     ],
     duration: "14 Days / 13 Nights",
+    nights: 13,
     groupSize: "2-12 People",
+    maxGuests: 12,
     price: 1899,
     originalPrice: 2499,
     rating: 4.9,
     reviewCount: 523,
     category: "Adventure",
     highlights: ["Sigiriya & Dambulla", "Ella Train", "Yala Safari", "Mirissa Beaches", "Galle Fort", "Kandy Temple", "Tea Country", "Colombo City Tour"],
-    included: ["All accommodation", "Daily breakfast & dinner", "Expert guide", "All entrance fees", "Internal transport", "Airport transfers"],
+    included: [
+      "English Speaking Private Driver Guide",
+      "Airport Pick-up and Drop Off",
+      "Activities & Attractions Entrance Fees",
+      "Air-conditioned Private Vehicle",
+      "Unlimited Wi-Fi (inside the vehicle)",
+      "Scenic Train Tickets (Kandy to Ella)",
+      "4x4 Jeep Safari (Yala National Park)",
+      "13 Nights Accommodation (Hand-picked hotels)",
+      "Daily Breakfast & Dinner",
+      "All Government Taxes & Service Charges"
+    ],
+    excluded: [
+      "Personal Expenses (Laundry, Telephone calls, Tips)",
+      "Lunch / Snacks (unless specified)",
+      "Extra Excursions not mentioned in itinerary",
+      "Travel Insurance",
+      "International Flights",
+      "Alcoholic Beverages",
+      "Camera / Video Permits inside parks"
+    ],
     itinerary: [
       { day: 1, title: "Arrival in Colombo", description: "Welcome and city orientation tour." },
       { day: 2, title: "Negombo & North", description: "Fish market, lagoon, and heading north." },

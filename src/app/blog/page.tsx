@@ -5,7 +5,7 @@ import { blogPosts } from '@/data/blog';
 import { Clock, ArrowRight, Tag } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: "Travel Blog | Good's Lanka Tours & Travels",
+  title: "Travel Blog | GODS LANKA Tours & Travels",
   description: "Sri Lanka travel tips, destination guides, and inspiring stories from our expert team. Plan your perfect Sri Lankan holiday with our guides.",
 };
 

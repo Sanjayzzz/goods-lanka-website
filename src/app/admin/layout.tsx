@@ -81,10 +81,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="p-6 border-b border-white/10">
         <Link href="/admin/dashboard" className="flex items-center gap-3">
           <div className="relative w-10 h-10 shrink-0">
-            <Image src="/logo.png" alt="Good's Lanka" fill className="object-contain" />
+            <Image src="/logo.png" alt="GODS LANKA" fill className="object-contain" />
           </div>
           <div>
-            <p className="text-white font-bold text-sm leading-tight">Good&apos;s Lanka</p>
+            <p className="text-white font-bold text-sm leading-tight">GODS LANKA</p>
             <p className="text-white/40 text-[10px] uppercase tracking-widest">Admin Portal</p>
           </div>
         </Link>

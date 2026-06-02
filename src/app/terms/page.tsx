@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Terms & Conditions | Good's Lanka Tours & Travels",
-  description: "Read the terms and conditions for Good's Lanka Tours & Travels services.",
+  title: "Terms & Conditions | GODS LANKA Tours & Travels",
+  description: "Read the terms and conditions for GODS LANKA Tours & Travels services.",
 };
 
 export default function TermsPage() {
@@ -17,7 +17,7 @@ export default function TermsPage() {
         <div className="prose prose-gray max-w-none space-y-8 text-gray-600 leading-relaxed">
           <section>
             <h2 className="font-[var(--font-playfair)] text-xl font-bold text-ocean-900 mb-3">1. Booking & Reservations</h2>
-            <p>All tour bookings are subject to availability and confirmation by our team. A booking is confirmed only upon receipt of the required deposit (20% of the total tour cost) and written confirmation from Good&apos;s Lanka Tours & Travels. Full payment is required 14 days prior to the tour departure date.</p>
+            <p>All tour bookings are subject to availability and confirmation by our team. A booking is confirmed only upon receipt of the required deposit (20% of the total tour cost) and written confirmation from GODS LANKA Tours & Travels. Full payment is required 14 days prior to the tour departure date.</p>
           </section>
 
           <section>
@@ -32,7 +32,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="font-[var(--font-playfair)] text-xl font-bold text-ocean-900 mb-3">3. Travel Insurance</h2>
-            <p>We strongly recommend all travelers obtain comprehensive travel insurance before departure. Good&apos;s Lanka Tours & Travels is not liable for any medical expenses, losses, or damages during your trip that would be covered by travel insurance.</p>
+            <p>We strongly recommend all travelers obtain comprehensive travel insurance before departure. GODS LANKA Tours & Travels is not liable for any medical expenses, losses, or damages during your trip that would be covered by travel insurance.</p>
           </section>
 
           <section>
@@ -47,7 +47,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="font-[var(--font-playfair)] text-xl font-bold text-ocean-900 mb-3">6. Liability</h2>
-            <p>Good&apos;s Lanka Tours & Travels acts as a facilitator between travelers and third-party service providers (hotels, transport, activities). While we carefully vet our partners, we are not directly liable for services provided by third parties. Our maximum liability is limited to the tour price paid.</p>
+            <p>GODS LANKA Tours & Travels acts as a facilitator between travelers and third-party service providers (hotels, transport, activities). While we carefully vet our partners, we are not directly liable for services provided by third parties. Our maximum liability is limited to the tour price paid.</p>
           </section>
 
           <section>
@@ -59,9 +59,9 @@ export default function TermsPage() {
             <h2 className="font-[var(--font-playfair)] text-xl font-bold text-ocean-900 mb-3">8. Contact</h2>
             <p>For questions regarding these terms, contact us at:</p>
             <p className="mt-2">
-              <strong>Good&apos;s Lanka Tours & Travels</strong><br />
+              <strong>GODS LANKA Tours & Travels</strong><br />
               42 Temple Road, Colombo 03, Sri Lanka<br />
-              Email: legal@goodslanka.com<br />
+              Email: legal@godslanka.com<br />
               Phone: +94 77 726 6044
             </p>
           </section>

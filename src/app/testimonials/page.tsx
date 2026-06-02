@@ -4,8 +4,8 @@ import { testimonials } from '@/data/testimonials';
 import { Star, Quote } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: "Testimonials | Good's Lanka Tours & Travels",
-  description: "Read what our travelers say about their Sri Lanka experience with Good's Lanka Tours & Travels.",
+  title: "Testimonials | GODS LANKA Tours & Travels",
+  description: "Read what our travelers say about their Sri Lanka experience with GODS LANKA Tours & Travels.",
 };
 
 export default function TestimonialsPage() {

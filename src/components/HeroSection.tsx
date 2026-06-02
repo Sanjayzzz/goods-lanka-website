@@ -118,7 +118,7 @@ export default function HeroSection() {
             </h1>
 
             <p className="text-lg sm:text-xl text-white/80 mb-8 sm:mb-10 font-light max-w-2xl mx-auto">
-              {slide.subtitle} — Experience luxury tours, exotic destinations, and unforgettable adventures with Good&apos;s Lanka Tours & Travels
+              {slide.subtitle} — Experience luxury tours, exotic destinations, and unforgettable adventures with GODS LANKA Tours & Travels
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">

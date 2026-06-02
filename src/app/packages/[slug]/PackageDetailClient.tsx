@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Package } from '@/data/packages';
 import { Star, Clock, Users, Check, ChevronRight, Calendar, Phone, ArrowRight } from 'lucide-react';
+import ReviewsSection from './ReviewsSection';
 
 interface Props { pkg: Package; }
 
@@ -68,6 +69,12 @@ export default function PackageDetailClient({ pkg }: Props) {
               <p className="text-gray-600 leading-relaxed">{pkg.description}</p>
             </div>
 
+            {/* Tour Description */}
+            <div className="mb-8">
+              <h3 className="font-[var(--font-playfair)] text-xl sm:text-2xl font-bold text-ocean-900 mb-3">About This Tour</h3>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{pkg.tourDescription}</p>
+            </div>
+
             {/* Tabs */}
             <div className="mb-8">
               <div className="flex gap-2 border-b border-gray-200 mb-6 overflow-x-auto no-scrollbar">
@@ -110,15 +117,42 @@ export default function PackageDetailClient({ pkg }: Props) {
               )}
 
               {activeTab === 'included' && (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {pkg.included.map(item => (
-                    <div key={item} className="flex items-center gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm">
-                      <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                        <Check size={14} className="text-green-600" />
-                      </div>
-                      <span className="text-sm text-gray-700">{item}</span>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Included Column */}
+                  <div>
+                    <h4 className="font-semibold text-ocean-900 mb-4 flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                      What's Included
+                    </h4>
+                    <div className="space-y-3">
+                      {pkg.included.map(item => (
+                        <div key={item} className="flex items-start gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm">
+                          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0 mt-0.5">
+                            <Check size={12} className="text-green-600" />
+                          </div>
+                          <span className="text-sm text-gray-700 font-medium">{item}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Excluded Column */}
+                  <div>
+                    <h4 className="font-semibold text-ocean-900 mb-4 flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                      What's Excluded
+                    </h4>
+                    <div className="space-y-3">
+                      {pkg.excluded && pkg.excluded.map(item => (
+                        <div key={item} className="flex items-start gap-3 p-3.5 bg-white rounded-xl border border-gray-100 shadow-sm">
+                          <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-red-600 font-bold text-sm">×</span>
+                          </div>
+                          <span className="text-sm text-gray-600">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </div>
@@ -192,6 +226,9 @@ export default function PackageDetailClient({ pkg }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Reviews Section */}
+        <ReviewsSection packageSlug={pkg.slug} packageName={pkg.name} />
 
         {/* Related Packages */}
         <div className="mt-16 pt-10 border-t border-gray-100">

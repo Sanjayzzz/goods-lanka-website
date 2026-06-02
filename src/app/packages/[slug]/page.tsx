@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pkg = packages.find(p => p.slug === slug);
   if (!pkg) return { title: 'Package Not Found' };
   return {
-    title: `${pkg.name} | Good's Lanka Tours & Travels`,
+    title: `${pkg.name} | GODS LANKA Tours & Travels`,
     description: pkg.description,
   };
 }

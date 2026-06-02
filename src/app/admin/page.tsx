@@ -41,9 +41,9 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="relative w-20 h-20 mx-auto mb-4">
-            <Image src="/logo.png" alt="Good's Lanka" fill className="object-contain" />
+            <Image src="/logo.png" alt="GODS LANKA" fill className="object-contain" />
           </div>
-          <h1 className="font-[var(--font-playfair)] text-3xl font-bold text-white">Good&apos;s Lanka</h1>
+          <h1 className="font-[var(--font-playfair)] text-3xl font-bold text-white">GODS LANKA</h1>
           <p className="text-white/60 text-sm mt-1 tracking-widest uppercase">Admin Portal</p>
         </div>
 
@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                placeholder="admin@goodslanka.com"
+                placeholder="admin@godslanka.com"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-ocean-500 focus:border-transparent text-gray-800 placeholder-gray-400"
               />
             </div>
@@ -91,7 +91,7 @@ export default function AdminLoginPage() {
         </div>
 
         <p className="text-center text-white/40 text-xs mt-6">
-          Good&apos;s Lanka Tours &amp; Travels — Admin Portal
+          GODS LANKA Tours &amp; Travels — Admin Portal
         </p>
       </div>
     </div>

@@ -151,7 +151,7 @@ export default function EditBookingPage() {
         </div>
 
         <p className="text-center text-gray-400 text-xs mt-6">
-          Need to make bigger changes? <a href="mailto:info@goodslanka.com" className="text-ocean-600 hover:underline">Contact us</a>
+          Need to make bigger changes? <a href="mailto:info@godslanka.com" className="text-ocean-600 hover:underline">Contact us</a>
         </p>
       </div>
     </main>

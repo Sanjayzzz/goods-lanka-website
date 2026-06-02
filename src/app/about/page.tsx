@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { Award, Heart, Users, Globe, Star, ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: "About Us | Good's Lanka Tours & Travels",
-  description: "Learn about Good's Lanka Tours & Travels — Sri Lanka's premier luxury tour operator with 12+ years of creating unforgettable travel experiences.",
+  title: "About Us | GODS LANKA Tours & Travels",
+  description: "Learn about GODS LANKA Tours & Travels — Sri Lanka's premier luxury tour operator with 12+ years of creating unforgettable travel experiences.",
 };
 
 const team = [
@@ -31,7 +31,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-ocean-950/70" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
           <span className="text-tropical-400 text-sm font-semibold uppercase tracking-[0.2em] mb-3 block">Our Story</span>
-          <h1 className="font-[var(--font-playfair)] text-4xl sm:text-5xl font-bold text-white mb-4">About Good&apos;s Lanka</h1>
+          <h1 className="font-[var(--font-playfair)] text-4xl sm:text-5xl font-bold text-white mb-4">About GODS LANKA</h1>
           <p className="text-white/70 max-w-xl mx-auto">Crafting extraordinary Sri Lankan journeys since 2012.</p>
         </div>
       </section>
@@ -45,7 +45,7 @@ export default function AboutPage() {
               <h2 className="font-[var(--font-playfair)] text-3xl sm:text-4xl font-bold text-ocean-900 mb-6 leading-tight">Born From a Love of Sri Lanka</h2>
               <div className="section-divider mb-6" />
               <div className="space-y-4 text-gray-500 leading-relaxed">
-                <p>Good&apos;s Lanka Tours & Travels was founded in 2012 by Roshan Perera, a passionate Sri Lankan traveler who wanted to share the incredible beauty of his homeland with the world.</p>
+                <p>GODS LANKA Tours & Travels was founded in 2012 by Roshan Perera, a passionate Sri Lankan traveler who wanted to share the incredible beauty of his homeland with the world.</p>
                 <p>What began as a small operation with just two tour guides and a handful of clients has grown into one of Sri Lanka&apos;s most respected and awarded tourism companies, serving over 15,000 international travelers annually.</p>
                 <p>We believe that travel is transformative — it changes perspectives, builds bridges between cultures, and creates memories that last a lifetime. Every tour we create is designed to give you an authentic, deeply enriching experience of Sri Lanka.</p>
               </div>

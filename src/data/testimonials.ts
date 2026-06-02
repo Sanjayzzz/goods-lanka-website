@@ -32,7 +32,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "4", name: "Emily & James Carter", country: "Australia", avatar: "EC", rating: 5,
     title: "Best Family Holiday Ever",
-    review: "Traveling with two kids can be challenging, but Good's Lanka made it effortless. The kids loved the elephant safari, and we all fell in love with Ella.",
+    review: "Traveling with two kids can be challenging, but GODS LANKA made it effortless. The kids loved the elephant safari, and we all fell in love with Ella.",
     tourPackage: "Complete Sri Lanka Discovery", date: "December 2024"
   },
   {

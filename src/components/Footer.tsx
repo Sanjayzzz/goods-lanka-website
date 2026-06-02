@@ -86,7 +86,7 @@ export default function Footer() {
                 GL
               </div>
               <div>
-                <span className="font-[var(--font-playfair)] text-lg font-bold text-white">Good&apos;s Lanka</span>
+                <span className="font-[var(--font-playfair)] text-lg font-bold text-white">GODS LANKA</span>
                 <span className="block text-xs tracking-widest uppercase text-tropical-400">Tours & Travels</span>
               </div>
             </Link>
@@ -149,7 +149,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <Mail size={16} className="text-tropical-400 shrink-0" />
-                <span className="text-white/50">info@goodslanka.com</span>
+                <span className="text-white/50">info@godslanka.com</span>
               </div>
             </div>
           </div>
@@ -159,7 +159,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-white/40">
-          <p>© {new Date().getFullYear()} Good&apos;s Lanka Tours &amp; Travels. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} GODS LANKA Tours &amp; Travels. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>

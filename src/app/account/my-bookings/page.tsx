@@ -57,10 +57,10 @@ export default function MyBookingsPage() {
         <div className="max-w-4xl mx-auto px-4 py-5 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="relative w-10 h-10 shrink-0">
-              <Image src="/logo.png" alt="Good's Lanka" fill className="object-contain" />
+              <Image src="/logo.png" alt="GODS LANKA" fill className="object-contain" />
             </div>
             <div>
-              <p className="font-bold text-sm leading-tight">Good&apos;s Lanka</p>
+              <p className="font-bold text-sm leading-tight">GODS LANKA</p>
               <p className="text-white/50 text-[10px] uppercase tracking-widest">Tours & Travels</p>
             </div>
           </Link>

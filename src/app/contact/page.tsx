@@ -10,7 +10,7 @@ import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from 'lucide-react';
 const contactDetails = [
   { icon: MapPin, label: 'Office Address', value: '42 Temple Road, Colombo 03, Sri Lanka' },
   { icon: Phone, label: 'Phone', value: '+94 77 726 6044' },
-  { icon: Mail, label: 'Email', value: 'info@goodslanka.com' },
+  { icon: Mail, label: 'Email', value: 'info@godslanka.com' },
   { icon: Clock, label: 'Working Hours', value: 'Mon-Sat: 8AM - 8PM, Sun: 10AM - 5PM' },
 ];
 

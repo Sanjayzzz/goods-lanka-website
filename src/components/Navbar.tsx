@@ -86,7 +86,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-6">
             <span className="flex items-center gap-1.5"><Phone size={13} /> +94 77 726 6044</span>
-            <span className="flex items-center gap-1.5"><Mail size={13} /> info@goodslanka.com</span>
+            <span className="flex items-center gap-1.5"><Mail size={13} /> info@godslanka.com</span>
           </div>
           <div className="flex items-center gap-1.5">
             <MapPin size={13} /> Colombo, Sri Lanka
@@ -109,7 +109,7 @@ export default function Navbar() {
               <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 transition-all duration-300 group-hover:scale-110">
                 <Image
                   src="/logo.png"
-                  alt="Good's Lanka Tours & Travels"
+                  alt="GODS LANKA Tours & Travels"
                   fill
                   className="object-contain"
                   priority
@@ -119,7 +119,7 @@ export default function Navbar() {
                 <span className={`font-[var(--font-playfair)] text-base sm:text-lg font-bold transition-colors duration-300 ${
                   scrolled ? 'text-ocean-900' : 'text-white'
                 }`}>
-                  Good&apos;s Lanka
+                  GODS LANKA
                 </span>
                 <span className={`block text-[10px] sm:text-xs tracking-widest uppercase transition-colors duration-300 ${
                   scrolled ? 'text-tropical-600' : 'text-white/70'

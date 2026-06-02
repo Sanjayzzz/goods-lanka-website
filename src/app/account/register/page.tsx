@@ -50,7 +50,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
             <div className="relative w-20 h-20 mx-auto mb-4">
-              <Image src="/logo.png" alt="Good's Lanka" fill className="object-contain" />
+              <Image src="/logo.png" alt="GODS LANKA" fill className="object-contain" />
             </div>
           </Link>
           <h1 className="font-[var(--font-playfair)] text-3xl font-bold text-white">Create Account</h1>
