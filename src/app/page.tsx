@@ -216,17 +216,22 @@ function NewsletterSection() {
   );
 }
 
+interface VehiclePriceTier { guests: number; price: number; }
+interface VehiclePricing { car: VehiclePriceTier[]; van: VehiclePriceTier[]; }
+
 export default function HomePage() {
   const [selectedDest, setSelectedDest] = useState<Destination | null>(null);
+  const [selectedVehiclePricing, setSelectedVehiclePricing] = useState<VehiclePricing | null>(null);
   const [liveDestinations, setLiveDestinations] = useState(destinations);
+  const [vehiclePricingMap, setVehiclePricingMap] = useState<Map<string, VehiclePricing | null>>(new Map());
 
   useEffect(() => {
     const supabase = createClient();
-
-    // Load destinations
-    supabase.from('destinations').select('slug, price, active').then(({ data }) => {
+    supabase.from('destinations').select('slug, price, active, vehicle_pricing').then(({ data }) => {
       if (data) {
         const liveMap = new Map(data.map(d => [d.slug, d]));
+        const vpMap = new Map<string, VehiclePricing | null>(data.map(d => [d.slug, d.vehicle_pricing ?? null]));
+        setVehiclePricingMap(vpMap);
         setLiveDestinations(destinations.filter(d => {
           const live = liveMap.get(d.slug);
           return !live || live.active;
@@ -238,6 +243,11 @@ export default function HomePage() {
       }
     });
   }, []);
+
+  const handleOpenModal = (dest: Destination) => {
+    setSelectedDest(dest);
+    setSelectedVehiclePricing(vehiclePricingMap.get(dest.slug) ?? null);
+  };
 
   return (
     <>
@@ -273,7 +283,7 @@ export default function HomePage() {
                 key={dest.id} 
                 destination={dest} 
                 index={i} 
-                onClick={() => setSelectedDest(dest)}
+                onClick={() => handleOpenModal(dest)}
               />
             ))}
           </div>
@@ -296,7 +306,8 @@ export default function HomePage() {
       <DestinationModal 
         destination={selectedDest} 
         isOpen={selectedDest !== null} 
-        onClose={() => setSelectedDest(null)} 
+        onClose={() => { setSelectedDest(null); setSelectedVehiclePricing(null); }}
+        vehiclePricing={selectedVehiclePricing}
       />
     </>
   );

@@ -54,3 +54,12 @@ create policy "Anyone can delete destinations" on destinations
 -- Fix missing user_id column in bookings table
 -- -------------------------------------------------------
 alter table bookings add column if not exists user_id uuid references auth.users(id) on delete set null;
+
+-- -------------------------------------------------------
+-- Add vehicle_pricing column to destinations table
+-- Stores per-vehicle, per-guest tiered pricing as JSON
+-- Format: { "car": [{guests:1,price:150},{guests:2,price:250},{guests:3,price:330}],
+--           "van": [{guests:1,price:120},...,{guests:5,price:380}] }
+-- -------------------------------------------------------
+alter table destinations add column if not exists vehicle_pricing jsonb default null;
+

@@ -2,8 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
-import { Edit2, Save, X, DollarSign, MapPin, RefreshCw } from 'lucide-react';
+import { Edit2, Save, X, MapPin, RefreshCw, Car, Bus } from 'lucide-react';
 import { destinations as staticDestinations } from '@/data/destinations';
+
+interface VehiclePriceTier {
+  guests: number;
+  price: number | '';
+}
+
+interface VehiclePricing {
+  car: VehiclePriceTier[];
+  van: VehiclePriceTier[];
+}
 
 interface Destination {
   id: string;
@@ -17,7 +27,16 @@ interface Destination {
   rating: number;
   review_count?: number;
   reviewCount?: number;
+  vehicle_pricing?: VehiclePricing | null;
 }
+
+const CAR_TIERS = [1, 2, 3];
+const VAN_TIERS = [1, 2, 3, 4, 5];
+
+const emptyVehiclePricing = (): VehiclePricing => ({
+  car: CAR_TIERS.map(g => ({ guests: g, price: '' })),
+  van: VAN_TIERS.map(g => ({ guests: g, price: '' })),
+});
 
 const categoryColors: Record<string, string> = {
   Cultural: 'bg-purple-100 text-purple-700',
@@ -35,38 +54,31 @@ export default function PackagesPage() {
   const [saveMsg, setSaveMsg] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
-  // Destinations State
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [editingDest, setEditingDest] = useState<string | null>(null);
   const [destEditData, setDestEditData] = useState<Partial<Destination>>({});
+  const [editVehiclePricing, setEditVehiclePricing] = useState<VehiclePricing>(emptyVehiclePricing());
 
   const loadData = async () => {
     setLoading(true);
     setRefreshing(true);
     const supabase = createClient();
-
     try {
-      // Load Destinations — always prefer DB data
       const { data: dests, error: destError } = await supabase.from('destinations').select('*').order('name');
-
-      if (destError) {
-        console.error('Destinations load error:', destError);
-      }
+      if (destError) console.error('Destinations load error:', destError);
 
       if (dests && dests.length > 0) {
         setDestinations(dests);
       } else {
-        // DB is empty or table not seeded — fall back to static with sensible defaults
         const defaultPrices: Record<string, number> = {
           sigiriya: 150, ella: 120, kandy: 100, mirissa: 130,
           galle: 110, 'nuwara-eliya': 125, yala: 180,
           'arugam-bay': 90, bentota: 140, colombo: 80
         };
         const mappedStatic = staticDestinations.map(d => ({
-          ...d,
-          review_count: d.reviewCount,
+          ...d, review_count: d.reviewCount,
           price: defaultPrices[d.slug.toLowerCase()] ?? 0,
-          active: true
+          active: true, vehicle_pricing: null,
         })) as any[];
         setDestinations(mappedStatic);
       }
@@ -78,21 +90,38 @@ export default function PackagesPage() {
     }
   };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  // --- Destination Actions ---
   const startEditDest = (dest: Destination) => {
     setEditingDest(dest.slug);
     setDestEditData({
-      name: dest.name,
-      tagline: dest.tagline,
-      description: dest.description,
-      category: dest.category,
-      price: dest.price,
-      active: dest.active
+      name: dest.name, tagline: dest.tagline,
+      description: dest.description, category: dest.category,
+      price: dest.price, active: dest.active,
     });
+
+    // Populate vehicle pricing from existing data or defaults
+    const existing = dest.vehicle_pricing;
+    const pricing: VehiclePricing = {
+      car: CAR_TIERS.map(g => ({
+        guests: g,
+        price: existing?.car?.find(t => t.guests === g)?.price ?? '',
+      })),
+      van: VAN_TIERS.map(g => ({
+        guests: g,
+        price: existing?.van?.find(t => t.guests === g)?.price ?? '',
+      })),
+    };
+    setEditVehiclePricing(pricing);
+  };
+
+  const updateVehiclePrice = (vehicle: 'car' | 'van', guests: number, value: string) => {
+    setEditVehiclePricing(prev => ({
+      ...prev,
+      [vehicle]: prev[vehicle].map(t =>
+        t.guests === guests ? { ...t, price: value === '' ? '' : Number(value) } : t
+      ),
+    }));
   };
 
   const saveEditDest = async (slug: string) => {
@@ -102,49 +131,41 @@ export default function PackagesPage() {
       const destToSave = destinations.find(d => d.slug === slug);
       if (!destToSave) return;
 
-      const updatedPrice = Number(destEditData.price ?? destToSave.price);
+      // Clean vehicle pricing — remove empty entries
+      const cleanedVehiclePricing: VehiclePricing = {
+        car: editVehiclePricing.car.filter(t => t.price !== '' && Number(t.price) > 0).map(t => ({ guests: t.guests, price: Number(t.price) })),
+        van: editVehiclePricing.van.filter(t => t.price !== '' && Number(t.price) > 0).map(t => ({ guests: t.guests, price: Number(t.price) })),
+      };
+
       const updatedFields = {
         name: destEditData.name ?? destToSave.name,
         tagline: destEditData.tagline ?? destToSave.tagline,
         description: destEditData.description ?? destToSave.description,
         category: destEditData.category ?? destToSave.category,
-        price: updatedPrice,
+        price: Number(destEditData.price ?? destToSave.price),
         active: destEditData.active ?? destToSave.active,
+        vehicle_pricing: (cleanedVehiclePricing.car.length > 0 || cleanedVehiclePricing.van.length > 0) ? cleanedVehiclePricing : null,
       };
 
-      // Apply to local state immediately so UI reflects change right away
       setDestinations(prev => prev.map(d =>
         d.slug === slug ? { ...d, ...updatedFields } as Destination : d
       ));
       setEditingDest(null);
 
-      // Try to persist to database (UPDATE existing row by slug)
-      const { error } = await supabase
-        .from('destinations')
-        .update(updatedFields)
-        .eq('slug', slug);
-
+      const { error } = await supabase.from('destinations').update(updatedFields).eq('slug', slug);
       if (error) {
-        // DB row may not exist yet — try inserting it
         const { error: insertError } = await supabase.from('destinations').insert({
-          ...(destToSave as any),
-          ...updatedFields,
-          id: undefined, // let DB generate UUID
+          ...(destToSave as any), ...updatedFields, id: undefined,
         });
-
-        if (insertError) {
-          setSaveMsg('✓ Updated locally (database sync pending)');
-        } else {
-          setSaveMsg('✓ Destination created & saved in database!');
-          await loadData(); // Refresh with DB-assigned UUID
-        }
+        setSaveMsg(insertError ? '⚠️ Updated locally (database sync pending)' : '✅ Destination created & saved!');
+        if (!insertError) await loadData();
       } else {
-        setSaveMsg('✓ Destination saved successfully!');
+        setSaveMsg('✅ Destination saved successfully!');
       }
       setTimeout(() => setSaveMsg(''), 4000);
     } catch (err) {
       console.error('saveEditDest error:', err);
-      setSaveMsg('✓ Updated locally');
+      setSaveMsg('✅ Updated locally');
       setTimeout(() => setSaveMsg(''), 3000);
       setEditingDest(null);
     } finally {
@@ -157,18 +178,11 @@ export default function PackagesPage() {
       const supabase = createClient();
       const destToSave = destinations.find(d => d.slug === slug);
       if (!destToSave) return;
-
-      const { error } = await supabase.from('destinations').upsert({
-        ...destToSave,
-        active: !active
-      }, { onConflict: 'slug' });
-
+      const { error } = await supabase.from('destinations').upsert({ ...destToSave, active: !active }, { onConflict: 'slug' });
       if (error) {
         setDestinations(prev => prev.map(d => d.slug === slug ? { ...d, active: !active } : d));
-      } else {
-        await loadData();
-      }
-    } catch (err) {
+      } else { await loadData(); }
+    } catch {
       setDestinations(prev => prev.map(d => d.slug === slug ? { ...d, active: !active } : d));
     }
   };
@@ -185,7 +199,7 @@ export default function PackagesPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Destinations &amp; Pricing</h2>
-          <p className="text-gray-500 text-sm">Configure per-day rates, taglines, and destination details</p>
+          <p className="text-gray-500 text-sm">Set Car &amp; Van prices per guest count for each destination</p>
         </div>
         <div className="flex items-center gap-3">
           {saveMsg && <span className="text-green-600 font-medium text-sm bg-green-50 px-4 py-2 rounded-xl border border-green-200">{saveMsg}</span>}
@@ -196,81 +210,158 @@ export default function PackagesPage() {
         </div>
       </div>
 
-      {/* Content Area */}
+      {/* Destination Cards */}
       <div className="grid gap-4">
         {destinations.map(dest => (
-          <div key={dest.slug} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6">
+          <div key={dest.slug} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             {editingDest === dest.slug ? (
-              <div className="space-y-4">
+              /* ── EDIT MODE ── */
+              <div className="p-5 sm:p-6 space-y-6">
+                {/* Basic Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[
-                    { key: 'name', label: 'Destination Name', type: 'text' },
-                    { key: 'tagline', label: 'Tagline', type: 'text' },
-                    { key: 'category', label: 'Category', type: 'text' },
-                  ].map(f => (
+                  {([
+                    { key: 'name', label: 'Destination Name' },
+                    { key: 'tagline', label: 'Tagline' },
+                    { key: 'category', label: 'Category' },
+                  ] as const).map(f => (
                     <div key={f.key}>
                       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">{f.label}</label>
-                      <input
-                        type={f.type}
+                      <input type="text"
                         value={(destEditData as Record<string, string | number>)[f.key] as string ?? ''}
                         onChange={e => setDestEditData(p => ({ ...p, [f.key]: e.target.value }))}
-                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500"
-                      />
+                        className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500" />
                     </div>
                   ))}
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Tour Price / Day / Person (USD $)</label>
-                    <input 
-                      type="number" 
-                      value={destEditData.price ?? ''} 
-                      onChange={e => setDestEditData(p => ({ ...p, price: Number(e.target.value) }))}
-                      className="w-full px-3 py-2.5 border-2 border-ocean-400 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500 font-bold text-ocean-700 text-lg" 
-                    />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Description</label>
+                  <textarea rows={3} value={destEditData.description ?? ''}
+                    onChange={e => setDestEditData(p => ({ ...p, description: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500" />
+                </div>
+
+                {/* Vehicle Pricing Tables */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* CAR */}
+                  <div className="border-2 border-blue-200 rounded-2xl overflow-hidden">
+                    <div className="bg-blue-50 px-4 py-3 flex items-center gap-2 border-b border-blue-200">
+                      <Car size={18} className="text-blue-600" />
+                      <div>
+                        <p className="font-bold text-blue-800 text-sm">🚗 Car Pricing</p>
+                        <p className="text-blue-500 text-xs">Max 3 guests</p>
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      {editVehiclePricing.car.map(tier => (
+                        <div key={tier.guests} className="flex items-center gap-3">
+                          <span className="text-sm font-medium text-gray-600 w-20 shrink-0">
+                            {tier.guests} {tier.guests === 1 ? 'person' : 'persons'}
+                          </span>
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">$</span>
+                            <input
+                              type="number" min={0}
+                              placeholder="Enter price"
+                              value={tier.price}
+                              onChange={e => updateVehiclePrice('car', tier.guests, e.target.value)}
+                              className="w-full pl-7 pr-3 py-2 border-2 border-blue-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-semibold text-blue-800"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* VAN */}
+                  <div className="border-2 border-tropical-200 rounded-2xl overflow-hidden">
+                    <div className="bg-tropical-50 px-4 py-3 flex items-center gap-2 border-b border-tropical-200">
+                      <Bus size={18} className="text-tropical-600" />
+                      <div>
+                        <p className="font-bold text-tropical-800 text-sm">🚐 Van Pricing</p>
+                        <p className="text-tropical-500 text-xs">Max 5 guests</p>
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      {editVehiclePricing.van.map(tier => (
+                        <div key={tier.guests} className="flex items-center gap-3">
+                          <span className="text-sm font-medium text-gray-600 w-20 shrink-0">
+                            {tier.guests} {tier.guests === 1 ? 'person' : 'persons'}
+                          </span>
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">$</span>
+                            <input
+                              type="number" min={0}
+                              placeholder="Enter price"
+                              value={tier.price}
+                              onChange={e => updateVehiclePrice('van', tier.guests, e.target.value)}
+                              className="w-full pl-7 pr-3 py-2 border-2 border-tropical-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-tropical-400 font-semibold text-tropical-800"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Description</label>
-                  <textarea
-                    rows={3}
-                    value={destEditData.description ?? ''}
-                    onChange={e => setDestEditData(p => ({ ...p, description: e.target.value }))}
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500"
-                  />
-                </div>
-
+                {/* Actions */}
                 <div className="flex gap-3 pt-1">
                   <button onClick={() => saveEditDest(dest.slug)} disabled={saving}
                     className="flex items-center gap-2 px-5 py-2.5 bg-ocean-700 text-white rounded-xl text-sm font-medium hover:bg-ocean-800 disabled:opacity-60">
                     <Save size={15} /> {saving ? 'Saving...' : 'Save Changes'}
                   </button>
-                  <button onClick={() => setEditingDest(null)} className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200">
+                  <button onClick={() => setEditingDest(null)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200">
                     <X size={15} /> Cancel
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-grow">
-                  <div className="flex items-center gap-2.5 mb-1 flex-wrap">
-                    <div className="flex items-center gap-1.5 text-gray-400">
+              /* ── VIEW MODE ── */
+              <div className="p-5 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                  <div className="flex-grow">
+                    <div className="flex items-center gap-2.5 mb-1 flex-wrap">
                       <MapPin size={16} className="text-tropical-500" />
                       <h3 className="font-bold text-gray-900">{dest.name}</h3>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${categoryColors[dest.category] ?? 'bg-gray-100 text-gray-600'}`}>{dest.category}</span>
+                      <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${dest.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                        {dest.active ? 'Active' : 'Hidden'}
+                      </span>
                     </div>
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${categoryColors[dest.category] ?? 'bg-gray-100 text-gray-600'}`}>{dest.category}</span>
-                    <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${dest.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                      {dest.active ? 'Active' : 'Hidden'}
-                    </span>
+                    <p className="text-gray-500 text-xs italic mb-3">{dest.tagline}</p>
+
+                    {/* Vehicle pricing summary */}
+                    {dest.vehicle_pricing ? (
+                      <div className="flex flex-wrap gap-4">
+                        {dest.vehicle_pricing.car && dest.vehicle_pricing.car.length > 0 && (
+                          <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
+                            <p className="text-xs font-bold text-blue-600 mb-1 flex items-center gap-1"><Car size={12} /> Car</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {dest.vehicle_pricing.car.map(t => (
+                                <span key={t.guests} className="text-xs text-blue-800 font-semibold">{t.guests}p: <span className="text-blue-600">${t.price}</span></span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {dest.vehicle_pricing.van && dest.vehicle_pricing.van.length > 0 && (
+                          <div className="bg-tropical-50 border border-tropical-100 rounded-xl px-3 py-2">
+                            <p className="text-xs font-bold text-tropical-600 mb-1 flex items-center gap-1"><Bus size={12} /> Van</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {dest.vehicle_pricing.van.map(t => (
+                                <span key={t.guests} className="text-xs text-tropical-800 font-semibold">{t.guests}p: <span className="text-tropical-600">${t.price}</span></span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 inline-block">
+                        ⚠️ No vehicle pricing set yet — click Edit to add Car &amp; Van prices
+                      </p>
+                    )}
                   </div>
-                  <p className="text-gray-500 text-xs italic mb-2">{dest.tagline}</p>
-                  <p className="text-gray-400 text-sm line-clamp-2">{dest.description}</p>
-                </div>
-                <div className="flex items-center gap-6 shrink-0 justify-between sm:justify-start">
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-ocean-700">${dest.price?.toLocaleString()} <span className="text-sm font-normal text-gray-500">/ day</span></p>
-                    <p className="text-xs text-gray-400">Base Tour Price</p>
-                  </div>
-                  <div className="flex gap-2">
+
+                  <div className="flex items-center gap-2 shrink-0">
                     <button onClick={() => startEditDest(dest)}
                       className="flex items-center gap-1.5 px-4 py-2 bg-ocean-50 text-ocean-700 rounded-xl text-sm font-medium hover:bg-ocean-100">
                       <Edit2 size={14} /> Edit

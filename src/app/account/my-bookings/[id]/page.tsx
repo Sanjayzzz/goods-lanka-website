@@ -67,35 +67,48 @@ export default function EditBookingPage() {
     try {
       const supabase = createClient();
 
-      // Extract duration days from special_requests (format: "Duration: X days\n...")
+      // Extract duration days from special_requests
       let durationDays = 1;
       const durationMatch = (form.special_requests || booking?.special_requests || '').match(/Duration:\s*(\d+)\s*day/i);
       if (durationMatch) {
         durationDays = Number(durationMatch[1]);
       }
 
-      // Fetch destination's current per-day price from DB
-      // The package_name is formatted as "Sigiriya Tour" → derive slug
+      // Extract vehicle type from special_requests
+      const vehicleMatch = (form.special_requests || booking?.special_requests || '').match(/Vehicle:\s*(Car|Van)/i);
+      const vehicleType = vehicleMatch ? vehicleMatch[1].toLowerCase() as 'car' | 'van' : 'car';
+
+      // Fetch destination's current vehicle_pricing from DB
       const destName = booking?.package_name?.replace(' Tour', '').trim() ?? '';
       const destSlug = destName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      let pricePerDay = 0;
+      let newTotal = booking?.total_price ?? 0;
+
       if (destSlug) {
         const { data: destData } = await supabase
           .from('destinations')
-          .select('price')
+          .select('price, vehicle_pricing')
           .eq('slug', destSlug)
           .single();
-        if (destData?.price) {
-          pricePerDay = Number(destData.price);
+
+        if (destData) {
+          const vehiclePricing = destData.vehicle_pricing;
+          // Try tiered pricing first
+          if (vehiclePricing && vehiclePricing[vehicleType]) {
+            const tier = (vehiclePricing[vehicleType] as {guests:number;price:number}[]).find(t => t.guests === form.guests);
+            if (tier) {
+              newTotal = tier.price;
+            } else if (destData.price) {
+              // Fallback: base price * days * guests
+              newTotal = Number(destData.price) * durationDays * form.guests;
+            }
+          } else if (destData.price) {
+            newTotal = Number(destData.price) * durationDays * form.guests;
+          }
         }
       }
 
-      // Recalculate total: if we have a valid rate, recalculate; otherwise keep existing total scaled by guest ratio
-      let newTotal = booking?.total_price ?? 0;
-      if (pricePerDay > 0) {
-        newTotal = pricePerDay * durationDays * form.guests;
-      } else if (booking && booking.guests > 0) {
-        // Fallback: scale existing total by ratio of new guests / old guests
+      // Final fallback: scale by guest ratio
+      if (newTotal === booking?.total_price && booking && booking.guests > 0 && form.guests !== booking.guests) {
         const perGuestTotal = booking.total_price / booking.guests;
         newTotal = Math.round(perGuestTotal * form.guests);
       }

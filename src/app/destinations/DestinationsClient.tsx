@@ -15,14 +15,18 @@ export default function DestinationsClient() {
   const [active, setActive] = useState('All');
   const [search, setSearch] = useState('');
   const [selectedDest, setSelectedDest] = useState<Destination | null>(null);
+  const [selectedVehiclePricing, setSelectedVehiclePricing] = useState<{car:{guests:number;price:number}[];van:{guests:number;price:number}[]} | null>(null);
   const [liveDestinations, setLiveDestinations] = useState(destinations);
+  const [vehiclePricingMap, setVehiclePricingMap] = useState<Map<string, any>>(new Map());
 
   useEffect(() => {
     import('@/lib/supabase').then(({ createClient }) => {
       const supabase = createClient();
-      supabase.from('destinations').select('slug, price, active').then(({ data }) => {
+      supabase.from('destinations').select('slug, price, active, vehicle_pricing').then(({ data }) => {
         if (data) {
           const liveMap = new Map(data.map(d => [d.slug, d]));
+          const vpMap = new Map(data.map(d => [d.slug, d.vehicle_pricing ?? null]));
+          setVehiclePricingMap(vpMap);
           setLiveDestinations(destinations.filter(d => {
             const live = liveMap.get(d.slug);
             return !live || live.active;
@@ -43,9 +47,11 @@ export default function DestinationsClient() {
         const found = liveDestinations.find(d => d.slug.toLowerCase() === hash.toLowerCase());
         if (found) {
           setSelectedDest(found);
+          setSelectedVehiclePricing(vehiclePricingMap.get(found.slug) ?? null);
         }
       } else {
         setSelectedDest(null);
+        setSelectedVehiclePricing(null);
       }
     };
 
@@ -53,7 +59,7 @@ export default function DestinationsClient() {
 
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, [liveDestinations]);
+  }, [liveDestinations, vehiclePricingMap]);
 
   const closeModal = () => {
     setSelectedDest(null);
@@ -149,6 +155,7 @@ export default function DestinationsClient() {
                     onClick={(e) => {
                       e.preventDefault();
                       setSelectedDest(dest);
+                      setSelectedVehiclePricing(vehiclePricingMap.get(dest.slug) ?? null);
                       window.history.pushState(null, '', `#${dest.slug}`);
                     }}
                     className="group block"
@@ -213,7 +220,8 @@ export default function DestinationsClient() {
       <DestinationModal 
         destination={selectedDest} 
         isOpen={selectedDest !== null} 
-        onClose={closeModal} 
+        onClose={closeModal}
+        vehiclePricing={selectedVehiclePricing}
       />
     </main>
   );

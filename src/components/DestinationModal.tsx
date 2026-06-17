@@ -6,13 +6,17 @@ import Link from 'next/link';
 import { X, Check, Compass, Star, MapPin } from 'lucide-react';
 import { Destination } from '@/data/destinations';
 
+interface VehiclePriceTier { guests: number; price: number; }
+interface VehiclePricing { car: VehiclePriceTier[]; van: VehiclePriceTier[]; }
+
 interface DestinationModalProps {
   destination: Destination | null;
   isOpen: boolean;
   onClose: () => void;
+  vehiclePricing?: VehiclePricing | null;
 }
 
-export default function DestinationModal({ destination, isOpen, onClose }: DestinationModalProps) {
+export default function DestinationModal({ destination, isOpen, onClose, vehiclePricing }: DestinationModalProps) {
   if (!destination) return null;
 
   const getPackageCategory = (destCat: string) => {
@@ -100,7 +104,41 @@ export default function DestinationModal({ destination, isOpen, onClose }: Desti
                   {destination.description}
                 </p>
 
-                {destination.price && (
+                {vehiclePricing && (vehiclePricing.car?.length > 0 || vehiclePricing.van?.length > 0) ? (
+                  <div className="mb-6 rounded-2xl border border-ocean-100 overflow-hidden shadow-sm">
+                    <div className="bg-ocean-50 px-4 py-2 border-b border-ocean-100">
+                      <p className="text-[10px] text-ocean-600 uppercase tracking-wider font-bold">Tour Pricing</p>
+                    </div>
+                    <div className="grid grid-cols-2 divide-x divide-gray-100">
+                      {/* Car */}
+                      <div className="p-3">
+                        <p className="text-xs font-bold text-blue-600 mb-2 flex items-center gap-1">🚗 Car <span className="text-gray-400 font-normal text-[10px]">(max 3)</span></p>
+                        <div className="space-y-1">
+                          {(vehiclePricing.car ?? []).map(t => (
+                            <div key={t.guests} className="flex justify-between text-xs">
+                              <span className="text-gray-500">{t.guests} {t.guests === 1 ? 'person' : 'persons'}</span>
+                              <span className="font-bold text-ocean-800">${t.price}</span>
+                            </div>
+                          ))}
+                          {(!vehiclePricing.car || vehiclePricing.car.length === 0) && <p className="text-xs text-gray-400">Not set</p>}
+                        </div>
+                      </div>
+                      {/* Van */}
+                      <div className="p-3">
+                        <p className="text-xs font-bold text-tropical-600 mb-2 flex items-center gap-1">🚐 Van <span className="text-gray-400 font-normal text-[10px]">(max 5)</span></p>
+                        <div className="space-y-1">
+                          {(vehiclePricing.van ?? []).map(t => (
+                            <div key={t.guests} className="flex justify-between text-xs">
+                              <span className="text-gray-500">{t.guests} {t.guests === 1 ? 'person' : 'persons'}</span>
+                              <span className="font-bold text-ocean-800">${t.price}</span>
+                            </div>
+                          ))}
+                          {(!vehiclePricing.van || vehiclePricing.van.length === 0) && <p className="text-xs text-gray-400">Not set</p>}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : destination.price ? (
                   <div className="mb-6 p-4 bg-gradient-to-r from-ocean-50 to-tropical-50/30 rounded-2xl border border-ocean-100/60 flex items-center justify-between shadow-sm">
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold mb-0.5">Base Tour Price</p>
@@ -108,7 +146,7 @@ export default function DestinationModal({ destination, isOpen, onClose }: Desti
                     </div>
                     <span className="text-[10px] sm:text-xs text-tropical-700 font-semibold bg-tropical-50/80 px-3 py-1.5 rounded-full border border-tropical-100/50">Customizable Tour</span>
                   </div>
-                )}
+                ) : null}
 
                 <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Key Highlights</h4>
                 <div className="grid grid-cols-2 gap-2 mb-8">

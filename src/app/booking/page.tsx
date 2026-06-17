@@ -6,17 +6,40 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { destinations, Destination } from '@/data/destinations';
 import { createClient } from '@/lib/supabase';
-import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle } from 'lucide-react';
+import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle, Car, Bus } from 'lucide-react';
 
 const steps = ['Select Tour', 'Travel Details', 'Personal Info', 'Confirmation'];
 
+interface VehiclePriceTier { guests: number; price: number; }
+interface VehiclePricing { car: VehiclePriceTier[]; van: VehiclePriceTier[]; }
+interface LiveDestination extends Destination {
+  vehicle_pricing?: VehiclePricing | null;
+}
+
+type VehicleType = 'car' | 'van';
+
+const VEHICLE_MAX: Record<VehicleType, number> = { car: 3, van: 5 };
+
+function getTieredPrice(
+  vehiclePricing: VehiclePricing | null | undefined,
+  vehicle: VehicleType,
+  guests: number
+): number | null {
+  if (!vehiclePricing) return null;
+  const tiers = vehiclePricing[vehicle];
+  if (!tiers || tiers.length === 0) return null;
+  const match = tiers.find(t => t.guests === guests);
+  return match ? match.price : null;
+}
+
 export default function BookingPage() {
   const [step, setStep] = useState(0);
-  const [liveDestinations, setLiveDestinations] = useState<Destination[]>(
+  const [liveDestinations, setLiveDestinations] = useState<LiveDestination[]>(
     destinations.map(d => ({ ...d, price: d.price ?? 99 }))
   );
   const [selectedDestId, setSelectedDestId] = useState<string>(destinations[0].id);
-  const [guests, setGuests] = useState(2);
+  const [vehicle, setVehicle] = useState<VehicleType>('car');
+  const [guests, setGuests] = useState(1);
   const [durationDays, setDurationDays] = useState(5);
   const [date, setDate] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', country: '', notes: '' });
@@ -35,7 +58,6 @@ export default function BookingPage() {
         return;
       }
       setUserId(user.id);
-      // Pre-fill name and email from account
       setForm(f => ({
         ...f,
         name: user.user_metadata?.full_name ?? '',
@@ -43,8 +65,11 @@ export default function BookingPage() {
       }));
       setAuthChecking(false);
 
-      // Load live destinations and merge with static details
-      const { data: dbDests } = await supabase.from('destinations').select('id, name, slug, price, active');
+      // Load live destinations with vehicle_pricing
+      const { data: dbDests } = await supabase
+        .from('destinations')
+        .select('id, name, slug, price, active, vehicle_pricing');
+
       if (dbDests) {
         const liveMap = new Map(dbDests.map(d => [d.slug, d]));
         const updatedDests = destinations.filter(d => {
@@ -57,31 +82,41 @@ export default function BookingPage() {
               ...d,
               id: live.id,
               price: Number(live.price) || 99,
-            };
+              vehicle_pricing: live.vehicle_pricing ?? null,
+            } as LiveDestination;
           }
-          return { ...d, price: d.price ?? 99 };
+          return { ...d, price: d.price ?? 99, vehicle_pricing: null } as LiveDestination;
         });
         setLiveDestinations(updatedDests);
-        
-        // Auto-select destination from query param
+
         const params = new URLSearchParams(window.location.search);
         const destParam = params.get('destination');
         if (destParam) {
           const found = updatedDests.find(
             d => d.name.toLowerCase() === destParam.toLowerCase() || d.slug.toLowerCase() === destParam.toLowerCase()
           );
-          if (found) {
-            setSelectedDestId(found.id);
-          }
+          if (found) setSelectedDestId(found.id);
         }
       }
     };
     checkAuth();
   }, []);
 
-  const dest = liveDestinations.find(d => d.id === selectedDestId) || liveDestinations[0];
+  const dest = (liveDestinations.find(d => d.id === selectedDestId) || liveDestinations[0]) as LiveDestination;
+
+  // Vehicle max guests
+  const maxGuests = VEHICLE_MAX[vehicle];
+
+  // Clamp guests when vehicle changes
+  const handleVehicleChange = (v: VehicleType) => {
+    setVehicle(v);
+    setGuests(g => Math.min(g, VEHICLE_MAX[v]));
+  };
+
+  // Get price from tiers or fall back to base price
+  const tieredPrice = getTieredPrice(dest?.vehicle_pricing, vehicle, guests);
   const basePrice = dest?.price ?? 99;
-  const total = basePrice * durationDays * guests;
+  const total = tieredPrice !== null ? tieredPrice : basePrice * guests;
 
   if (authChecking) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -93,12 +128,16 @@ export default function BookingPage() {
     if (step < 3) {
       setStep(s => s + 1);
     } else {
-      // Final step — save to Supabase
       setSubmitting(true);
       setSubmitError('');
       try {
         const supabase = createClient();
-        const formattedNotes = `Duration: ${durationDays} days\nBase Price/day/person: $${basePrice}\n\nNotes:\n${form.notes}`;
+        const formattedNotes =
+          `Vehicle: ${vehicle === 'car' ? 'Car (max 3)' : 'Van (max 5)'}\n` +
+          `Duration: ${durationDays} days\n` +
+          `Pricing: ${tieredPrice !== null ? `$${tieredPrice} (fixed ${guests}-person ${vehicle} rate)` : `$${basePrice}/person/day`}\n\n` +
+          `Notes:\n${form.notes}`;
+
         const { error } = await supabase.from('bookings').insert({
           package_name: `${dest.name} Tour`,
           travel_date: date || null,
@@ -137,6 +176,7 @@ export default function BookingPage() {
         <p className="text-gray-400 text-sm mb-8">We&apos;ve received your request for the <strong>{dest.name} Tour</strong>. Our team will contact you within 24 hours to coordinate your custom itinerary.</p>
         <div className="p-6 bg-ocean-50 rounded-2xl text-left mb-8 space-y-2">
           <div className="flex justify-between text-sm"><span className="text-gray-400">Destination</span><span className="font-medium text-ocean-900">{dest.name}</span></div>
+          <div className="flex justify-between text-sm"><span className="text-gray-400">Vehicle</span><span className="font-medium text-ocean-900">{vehicle === 'car' ? '🚗 Car' : '🚐 Van'}</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Duration</span><span className="font-medium text-ocean-900">{durationDays} Days</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Guests</span><span className="font-medium text-ocean-900">{guests}</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Travel Date</span><span className="font-medium text-ocean-900">{date || 'TBD'}</span></div>
@@ -158,7 +198,7 @@ export default function BookingPage() {
     <main className="pt-24 lg:pt-32 bg-gray-50/50 min-h-screen">
       {/* Hero */}
       <section className="relative h-48 overflow-hidden">
-        <Image src="https://images.unsplash.com/photo-1612862862126-865765df2ded?w=1600&q=80" alt="Sigiriya Rock Fortress Sri Lanka" fill className="object-cover" priority />
+        <Image src="https://images.unsplash.com/photo-1612862862126-865765df2ded?w=1600&q=80" alt="Book your Sri Lanka tour" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-ocean-950/75" />
         <div className="relative h-full flex flex-col items-center justify-center text-center px-6">
           <h1 className="font-[var(--font-playfair)] text-3xl sm:text-4xl font-bold text-white">Book Your Tour</h1>
@@ -185,35 +225,90 @@ export default function BookingPage() {
             {/* Form */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-3xl shadow-premium p-8">
+
+                {/* ── STEP 0: SELECT TOUR ── */}
                 {step === 0 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Choose a Tour Destination</h2>
                     <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 no-scrollbar">
-                      {liveDestinations.map(d => (
-                        <label key={d.id} className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedDestId === d.id ? 'border-tropical-500 bg-tropical-50' : 'border-gray-100 hover:border-gray-200'}`}>
-                          <input type="radio" name="destination" value={d.id} checked={selectedDestId === d.id} onChange={() => setSelectedDestId(d.id)} className="hidden" />
-                          <div className="relative w-16 h-12 rounded-xl overflow-hidden shrink-0">
-                            <Image src={d.image} alt={d.name} fill className="object-cover" sizes="64px" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-ocean-900 text-sm truncate">{d.name}</p>
-                            <p className="text-gray-400 text-xs">{d.category} • Customizable</p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="font-bold text-ocean-900">${d.price || 99}</p>
-                            <p className="text-gray-400 text-xs">/ person / day</p>
-                          </div>
-                          {selectedDestId === d.id && <Check size={18} className="text-tropical-500 shrink-0" />}
-                        </label>
-                      ))}
+                      {liveDestinations.map(d => {
+                        const hasVehiclePricing = d.vehicle_pricing && (d.vehicle_pricing.car?.length > 0 || d.vehicle_pricing.van?.length > 0);
+                        return (
+                          <label key={d.id} className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedDestId === d.id ? 'border-tropical-500 bg-tropical-50' : 'border-gray-100 hover:border-gray-200'}`}>
+                            <input type="radio" name="destination" value={d.id} checked={selectedDestId === d.id} onChange={() => setSelectedDestId(d.id)} className="hidden" />
+                            <div className="relative w-16 h-12 rounded-xl overflow-hidden shrink-0">
+                              <Image src={d.image} alt={d.name} fill className="object-cover" sizes="64px" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-ocean-900 text-sm truncate">{d.name}</p>
+                              <p className="text-gray-400 text-xs">{d.category}</p>
+                            </div>
+                            <div className="text-right shrink-0 text-xs text-gray-400">
+                              {hasVehiclePricing ? (
+                                <span className="text-tropical-600 font-semibold">Tiered pricing ✓</span>
+                              ) : (
+                                <span>${d.price || 99}/day</span>
+                              )}
+                            </div>
+                            {selectedDestId === d.id && <Check size={18} className="text-tropical-500 shrink-0" />}
+                          </label>
+                        );
+                      })}
                     </div>
                   </motion.div>
                 )}
 
+                {/* ── STEP 1: TRAVEL DETAILS ── */}
                 {step === 1 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Travel Details</h2>
                     <div className="space-y-6">
+
+                      {/* Vehicle Selection */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">Select Vehicle *</label>
+                        <div className="grid grid-cols-2 gap-4">
+                          <button
+                            type="button"
+                            onClick={() => handleVehicleChange('car')}
+                            className={`relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${vehicle === 'car' ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-gray-200 hover:border-blue-200 bg-white'}`}
+                          >
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${vehicle === 'car' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                              🚗
+                            </div>
+                            <div className="text-center">
+                              <p className={`font-bold text-sm ${vehicle === 'car' ? 'text-blue-800' : 'text-gray-700'}`}>Car</p>
+                              <p className={`text-xs mt-0.5 ${vehicle === 'car' ? 'text-blue-500' : 'text-gray-400'}`}>Up to 3 guests</p>
+                            </div>
+                            {vehicle === 'car' && (
+                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                                <Check size={12} className="text-white" />
+                              </div>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleVehicleChange('van')}
+                            className={`relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${vehicle === 'van' ? 'border-tropical-500 bg-tropical-50 shadow-md' : 'border-gray-200 hover:border-tropical-200 bg-white'}`}
+                          >
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${vehicle === 'van' ? 'bg-tropical-100' : 'bg-gray-100'}`}>
+                              🚐
+                            </div>
+                            <div className="text-center">
+                              <p className={`font-bold text-sm ${vehicle === 'van' ? 'text-tropical-800' : 'text-gray-700'}`}>Van</p>
+                              <p className={`text-xs mt-0.5 ${vehicle === 'van' ? 'text-tropical-500' : 'text-gray-400'}`}>Up to 5 guests</p>
+                            </div>
+                            {vehicle === 'van' && (
+                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-tropical-500 flex items-center justify-center">
+                                <Check size={12} className="text-white" />
+                              </div>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Travel Date */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Travel Date *</label>
                         <div className="relative">
@@ -222,6 +317,8 @@ export default function BookingPage() {
                             className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm" />
                         </div>
                       </div>
+
+                      {/* Number of Days */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Number of Days *</label>
                         <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl">
@@ -232,20 +329,39 @@ export default function BookingPage() {
                           <span className="text-gray-400 text-sm">{durationDays > 1 ? 'days' : 'day'}</span>
                         </div>
                       </div>
+
+                      {/* Number of Guests */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Number of Guests *</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Number of Guests * <span className="text-gray-400 font-normal">(max {maxGuests} for {vehicle})</span>
+                        </label>
                         <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl">
                           <Users size={18} className="text-tropical-500" />
                           <button onClick={() => setGuests(g => Math.max(1, g - 1))} className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold transition-colors">−</button>
                           <span className="font-bold text-ocean-900 text-xl w-10 text-center">{guests}</span>
-                          <button onClick={() => setGuests(g => g + 1)} className="w-9 h-9 rounded-full bg-tropical-100 hover:bg-tropical-200 flex items-center justify-center font-bold text-tropical-700 transition-colors">+</button>
+                          <button onClick={() => setGuests(g => Math.min(maxGuests, g + 1))} className="w-9 h-9 rounded-full bg-tropical-100 hover:bg-tropical-200 flex items-center justify-center font-bold text-tropical-700 transition-colors">+</button>
                           <span className="text-gray-400 text-sm">{guests > 1 ? 'guests' : 'guest'}</span>
                         </div>
+
+                        {/* Live Pricing Preview */}
+                        {dest?.vehicle_pricing && (
+                          <div className="mt-3 p-3 bg-ocean-50 border border-ocean-100 rounded-xl">
+                            <p className="text-xs font-semibold text-ocean-700 mb-1.5">Price for {vehicle === 'car' ? '🚗 Car' : '🚐 Van'}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {(dest.vehicle_pricing[vehicle] ?? []).map(t => (
+                                <span key={t.guests} className={`text-xs px-2.5 py-1 rounded-lg font-semibold border transition-all ${guests === t.guests ? 'bg-ocean-700 text-white border-ocean-700' : 'bg-white text-gray-600 border-gray-200'}`}>
+                                  {t.guests}p: ${t.price}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
                 )}
 
+                {/* ── STEP 2: PERSONAL INFO ── */}
                 {step === 2 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Personal Information</h2>
@@ -253,30 +369,30 @@ export default function BookingPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                          <input required type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})}
+                          <input required type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                             placeholder="John Smith" className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm" />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                          <input required type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})}
+                          <input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                             placeholder="john@example.com" className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm" />
                         </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
-                          <input required type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})}
+                          <input required type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
                             placeholder="+1 234 567 8900" className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm" />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
-                          <input required type="text" value={form.country} onChange={e => setForm({...form, country: e.target.value})}
+                          <input required type="text" value={form.country} onChange={e => setForm({ ...form, country: e.target.value })}
                             placeholder="United Kingdom" className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm" />
                         </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Special Requests</label>
-                        <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})}
+                        <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })}
                           rows={3} placeholder="Any dietary requirements, accessibility needs, or special requests..."
                           className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm resize-none" />
                       </div>
@@ -284,12 +400,14 @@ export default function BookingPage() {
                   </motion.div>
                 )}
 
+                {/* ── STEP 3: CONFIRMATION ── */}
                 {step === 3 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                    <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Review & Confirm</h2>
-                    <div className="space-y-4 mb-8">
+                    <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Review &amp; Confirm</h2>
+                    <div className="space-y-1 mb-8">
                       {[
-                        { label: 'Destination Tour', value: dest.name },
+                        { label: 'Destination', value: dest.name },
+                        { label: 'Vehicle', value: vehicle === 'car' ? '🚗 Car (max 3 guests)' : '🚐 Van (max 5 guests)' },
                         { label: 'Duration', value: `${durationDays} Days` },
                         { label: 'Travel Date', value: date || 'Not set' },
                         { label: 'Guests', value: guests.toString() },
@@ -301,8 +419,11 @@ export default function BookingPage() {
                           <span className="font-medium text-ocean-900">{item.value}</span>
                         </div>
                       ))}
-                      <div className="flex justify-between py-3 font-bold text-base">
-                        <span className="text-gray-700">Total Est. Price</span>
+                      <div className="flex justify-between py-4 font-bold text-base">
+                        <span className="text-gray-700">
+                          Total Est. Price
+                          {tieredPrice !== null && <span className="text-xs font-normal text-gray-400 ml-1">(fixed {guests}-person rate)</span>}
+                        </span>
                         <span className="text-ocean-900 text-xl">${total.toLocaleString()}</span>
                       </div>
                     </div>
@@ -315,9 +436,7 @@ export default function BookingPage() {
 
                 {/* Navigation */}
                 {submitError && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-                    {submitError}
-                  </div>
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">{submitError}</div>
                 )}
                 <div className="flex justify-between mt-4 pt-6 border-t border-gray-100">
                   {step > 0 ? (
@@ -341,12 +460,35 @@ export default function BookingPage() {
                   <Image src={dest.image} alt={dest.name} fill className="object-cover" sizes="300px" />
                 </div>
                 <h4 className="font-[var(--font-playfair)] font-bold text-ocean-900 mb-1">{dest.name} Tour</h4>
-                <p className="text-gray-400 text-xs mb-4">{dest.category} • Customizable</p>
+                <p className="text-gray-400 text-xs mb-4">{dest.category}</p>
+
                 <div className="space-y-2 text-sm border-t border-gray-100 pt-4">
-                  <div className="flex justify-between"><span className="text-gray-400">${basePrice} × {durationDays} days × {guests} guests</span><span>${total.toLocaleString()}</span></div>
-                  {date && <div className="flex justify-between"><span className="text-gray-400">Date</span><span className="font-medium">{date}</span></div>}
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Vehicle</span>
+                    <span className="font-medium">{vehicle === 'car' ? '🚗 Car' : '🚐 Van'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Guests</span>
+                    <span className="font-medium">{guests}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Duration</span>
+                    <span className="font-medium">{durationDays} days</span>
+                  </div>
+                  {tieredPrice !== null ? (
+                    <div className="flex justify-between text-xs text-gray-400">
+                      <span>Fixed {guests}-person {vehicle} rate</span>
+                      <span>${tieredPrice}</span>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between text-xs text-gray-400">
+                      <span>${basePrice} × {guests} × {durationDays}d</span>
+                      <span>${total.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-100">
-                    <span>Total</span><span className="text-ocean-900">${total.toLocaleString()}</span>
+                    <span>Total</span>
+                    <span className="text-ocean-900">${total.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
