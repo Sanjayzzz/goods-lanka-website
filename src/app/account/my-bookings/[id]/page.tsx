@@ -31,6 +31,7 @@ export default function EditBookingPage() {
   const [form, setForm] = useState({ travel_date: '', guests: 1, special_requests: '' });
   const [pricePerDay, setPricePerDay] = useState(0);
   const [durationDays, setDurationDays] = useState(1);
+  const [vehiclePricing, setVehiclePricing] = useState<{car:{guests:number;price:number}[];van:{guests:number;price:number}[]} | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -51,8 +52,9 @@ export default function EditBookingPage() {
       const destName = (data.package_name ?? '').replace(' Tour', '').trim();
       const destSlug = destName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
       if (destSlug) {
-        const { data: destData } = await supabase.from('destinations').select('price').eq('slug', destSlug).single();
+        const { data: destData } = await supabase.from('destinations').select('price, vehicle_pricing').eq('slug', destSlug).single();
         if (destData?.price) setPricePerDay(Number(destData.price));
+        if (destData?.vehicle_pricing) setVehiclePricing(destData.vehicle_pricing);
       }
 
       setLoading(false);
@@ -96,7 +98,7 @@ export default function EditBookingPage() {
           if (vehiclePricing && vehiclePricing[vehicleType]) {
             const tier = (vehiclePricing[vehicleType] as {guests:number;price:number}[]).find(t => t.guests === form.guests);
             if (tier) {
-              newTotal = tier.price;
+              newTotal = tier.price * durationDays;
             } else if (destData.price) {
               // Fallback: base price * days * guests
               newTotal = Number(destData.price) * durationDays * form.guests;
@@ -178,11 +180,33 @@ export default function EditBookingPage() {
               <div><p className="text-gray-400 text-xs mb-0.5">Country</p><p className="font-medium text-gray-800">{booking.country}</p></div>
               <div>
                 <p className="text-gray-400 text-xs mb-0.5">Total Price</p>
-                {pricePerDay > 0 ? (
-                  <p className="font-bold text-ocean-700 text-lg">${(pricePerDay * durationDays * form.guests).toLocaleString()} <span className="text-xs font-normal text-gray-400">(updated)</span></p>
-                ) : (
-                  <p className="font-bold text-ocean-700 text-lg">${booking.total_price?.toLocaleString()}</p>
-                )}
+                {(() => {
+                  let previewTotal = booking.total_price ?? 0;
+                  const liveDurationMatch = (form.special_requests || booking?.special_requests || '').match(/Duration:\s*(\d+)\s*day/i);
+                  const liveDuration = liveDurationMatch ? Number(liveDurationMatch[1]) : durationDays;
+                  
+                  const vMatch = (form.special_requests || booking?.special_requests || '').match(/Vehicle:\s*(Car|Van)/i);
+                  const vType = vMatch ? vMatch[1].toLowerCase() as 'car' | 'van' : 'car';
+                  
+                  if (vehiclePricing && vehiclePricing[vType]) {
+                    const tier = vehiclePricing[vType].find(t => t.guests === form.guests);
+                    if (tier) {
+                      previewTotal = tier.price * liveDuration;
+                    } else if (pricePerDay > 0) {
+                      previewTotal = pricePerDay * liveDuration * form.guests;
+                    }
+                  } else if (pricePerDay > 0) {
+                    previewTotal = pricePerDay * liveDuration * form.guests;
+                  }
+                  
+                  if (previewTotal === booking.total_price && form.guests !== booking.guests && booking.guests > 0) {
+                    previewTotal = Math.round((booking.total_price / booking.guests) * form.guests);
+                  }
+
+                  return (
+                    <p className="font-bold text-ocean-700 text-lg">${previewTotal.toLocaleString()} <span className="text-xs font-normal text-gray-400">(updated)</span></p>
+                  );
+                })()}
               </div>
               <div><p className="text-gray-400 text-xs mb-0.5">Status</p>
                 <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${

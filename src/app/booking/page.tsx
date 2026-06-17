@@ -116,7 +116,7 @@ export default function BookingPage() {
   // Get price from tiers or fall back to base price
   const tieredPrice = getTieredPrice(dest?.vehicle_pricing, vehicle, guests);
   const basePrice = dest?.price ?? 99;
-  const total = tieredPrice !== null ? tieredPrice : basePrice * guests;
+  const total = tieredPrice !== null ? tieredPrice * durationDays : basePrice * durationDays * guests;
 
   if (authChecking) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
