@@ -40,7 +40,7 @@ export default function BookingPage() {
   const [selectedDestId, setSelectedDestId] = useState<string>(destinations[0].id);
   const [vehicle, setVehicle] = useState<VehicleType>('car');
   const [guests, setGuests] = useState(1);
-  const [durationDays, setDurationDays] = useState(5);
+  const [durationDays, setDurationDays] = useState(1);
   const [date, setDate] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', country: '', notes: '' });
   const [booked, setBooked] = useState(false);
