@@ -202,8 +202,28 @@ export default function BookingsPage() {
               ))}
             </div>
             <div className="p-6 pt-0 flex gap-3">
-              <button onClick={() => updateStatus(selected.id, 'confirmed')} className="flex-1 py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700">Confirm</button>
-              <button onClick={() => updateStatus(selected.id, 'cancelled')} className="flex-1 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium hover:bg-red-100">Cancel</button>
+              <button 
+                onClick={async () => {
+                  await updateStatus(selected.id, 'confirmed');
+                  alert('Booking confirmed');
+                  setSelected(null);
+                }} 
+                disabled={updating === selected.id}
+                className="flex-1 py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 disabled:opacity-60"
+              >
+                {updating === selected.id ? 'Updating...' : 'Confirm'}
+              </button>
+              <button 
+                onClick={async () => {
+                  await updateStatus(selected.id, 'cancelled');
+                  alert('Booking cancelled');
+                  setSelected(null);
+                }} 
+                disabled={updating === selected.id}
+                className="flex-1 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-medium hover:bg-red-100 disabled:opacity-60"
+              >
+                {updating === selected.id ? 'Updating...' : 'Cancel Booking'}
+              </button>
             </div>
           </div>
         </div>
