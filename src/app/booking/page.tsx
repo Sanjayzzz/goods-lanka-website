@@ -248,15 +248,6 @@ export default function BookingPage() {
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Travel Details</h2>
 
-                    {/* Car icon display — no selection needed */}
-                    <div className="flex items-center gap-4 mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl">
-                      <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl shrink-0">🚗</div>
-                      <div>
-                        <p className="font-bold text-blue-800">Private Car Tour</p>
-                        <p className="text-xs text-blue-500 mt-0.5">Fully customisable private vehicle</p>
-                      </div>
-                    </div>
-
                     <div className="space-y-6">
 
                       {/* Travel Date */}
@@ -297,7 +288,10 @@ export default function BookingPage() {
                         {/* Live Pricing Preview */}
                         {dest?.vehicle_pricing?.car && dest.vehicle_pricing.car.length > 0 && (
                           <div className="mt-3 p-3 bg-ocean-50 border border-ocean-100 rounded-xl">
-                            <p className="text-xs font-semibold text-ocean-700 mb-1.5">🚗 Price per guest count (× days)</p>
+                            <p className="text-xs font-semibold text-ocean-700 mb-1.5 flex items-center gap-1.5">
+                              <Users size={14} className="text-ocean-600" />
+                              <span>Price per guest count (× days)</span>
+                            </p>
                             <div className="flex flex-wrap gap-2">
                               {dest.vehicle_pricing.car.map(t => (
                                 <span key={t.guests} className={`text-xs px-2.5 py-1 rounded-lg font-semibold border transition-all ${guests === t.guests ? 'bg-ocean-700 text-white border-ocean-700' : 'bg-white text-gray-600 border-gray-200'}`}>

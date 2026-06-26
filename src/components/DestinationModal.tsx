@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { X, Check, Compass, Star, MapPin } from 'lucide-react';
+import { X, Check, Compass, Star, MapPin, Users } from 'lucide-react';
 import { Destination } from '@/data/destinations';
 
 interface VehiclePriceTier { guests: number; price: number; }
@@ -107,7 +107,7 @@ export default function DestinationModal({ destination, isOpen, onClose, vehicle
                 {vehiclePricing && vehiclePricing.car?.length > 0 ? (
                   <div className="mb-6 rounded-2xl border border-ocean-100 overflow-hidden shadow-sm">
                     <div className="bg-ocean-50 px-4 py-2 border-b border-ocean-100 flex items-center gap-2">
-                      <span className="text-base">🚗</span>
+                      <Users size={14} className="text-ocean-600" />
                       <p className="text-[10px] text-ocean-600 uppercase tracking-wider font-bold">Tour Pricing per Guest</p>
                     </div>
                     <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">

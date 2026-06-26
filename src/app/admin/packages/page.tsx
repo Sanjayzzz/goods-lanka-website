@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
-import { Edit2, Save, X, MapPin, RefreshCw, Car } from 'lucide-react';
+import { Edit2, Save, X, MapPin, RefreshCw, Users } from 'lucide-react';
 import { destinations as staticDestinations } from '@/data/destinations';
 
 interface VehiclePriceTier {
@@ -239,9 +239,9 @@ export default function PackagesPage() {
                 {/* Pricing Table */}
                 <div className="border-2 border-blue-200 rounded-2xl overflow-hidden">
                   <div className="bg-blue-50 px-4 py-3 flex items-center gap-2 border-b border-blue-200">
-                    <Car size={18} className="text-blue-600" />
+                    <Users size={18} className="text-blue-600" />
                     <div>
-                      <p className="font-bold text-blue-800 text-sm">🚗 Pricing per Guest Count</p>
+                      <p className="font-bold text-blue-800 text-sm">Pricing per Guest Count</p>
                       <p className="text-blue-500 text-xs">Price per day — multiplied by number of days on booking</p>
                     </div>
                   </div>
@@ -296,7 +296,7 @@ export default function PackagesPage() {
                     {/* Vehicle pricing summary */}
                     {dest.vehicle_pricing && dest.vehicle_pricing.car && dest.vehicle_pricing.car.length > 0 ? (
                       <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 inline-block">
-                        <p className="text-xs font-bold text-blue-600 mb-1 flex items-center gap-1"><Car size={12} /> Pricing per Guest</p>
+                        <p className="text-xs font-bold text-blue-600 mb-1 flex items-center gap-1.5"><Users size={12} className="text-blue-600" /> Pricing per Guest</p>
                         <div className="flex gap-3 flex-wrap">
                           {dest.vehicle_pricing.car.map(t => (
                             <span key={t.guests} className="text-xs text-blue-800 font-semibold">{t.guests}p: <span className="text-blue-600">${t.price}</span></span>
