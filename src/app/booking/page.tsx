@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { destinations, Destination } from '@/data/destinations';
 import { createClient } from '@/lib/supabase';
-import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle, Car, Bus } from 'lucide-react';
+import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle } from 'lucide-react';
 
 const steps = ['Select Tour', 'Travel Details', 'Personal Info', 'Confirmation'];
 
@@ -16,17 +16,14 @@ interface LiveDestination extends Destination {
   vehicle_pricing?: VehiclePricing | null;
 }
 
-type VehicleType = 'car' | 'van';
-
-const VEHICLE_MAX: Record<VehicleType, number> = { car: 3, van: 5 };
+const MAX_GUESTS = 5;
 
 function getTieredPrice(
   vehiclePricing: VehiclePricing | null | undefined,
-  vehicle: VehicleType,
   guests: number
 ): number | null {
   if (!vehiclePricing) return null;
-  const tiers = vehiclePricing[vehicle];
+  const tiers = vehiclePricing.car;
   if (!tiers || tiers.length === 0) return null;
   const match = tiers.find(t => t.guests === guests);
   return match ? match.price : null;
@@ -38,7 +35,6 @@ export default function BookingPage() {
     destinations.map(d => ({ ...d, price: d.price ?? 99 }))
   );
   const [selectedDestId, setSelectedDestId] = useState<string>(destinations[0].id);
-  const [vehicle, setVehicle] = useState<VehicleType>('car');
   const [guests, setGuests] = useState(1);
   const [durationDays, setDurationDays] = useState(1);
   const [date, setDate] = useState('');
@@ -104,17 +100,8 @@ export default function BookingPage() {
 
   const dest = (liveDestinations.find(d => d.id === selectedDestId) || liveDestinations[0]) as LiveDestination;
 
-  // Vehicle max guests
-  const maxGuests = VEHICLE_MAX[vehicle];
-
-  // Clamp guests when vehicle changes
-  const handleVehicleChange = (v: VehicleType) => {
-    setVehicle(v);
-    setGuests(g => Math.min(g, VEHICLE_MAX[v]));
-  };
-
   // Get price from tiers or fall back to base price
-  const tieredPrice = getTieredPrice(dest?.vehicle_pricing, vehicle, guests);
+  const tieredPrice = getTieredPrice(dest?.vehicle_pricing, guests);
   const basePrice = dest?.price ?? 99;
   const total = tieredPrice !== null ? tieredPrice * durationDays : basePrice * durationDays * guests;
 
@@ -133,9 +120,8 @@ export default function BookingPage() {
       try {
         const supabase = createClient();
         const formattedNotes =
-          `Vehicle: ${vehicle === 'car' ? 'Car (max 3)' : 'Van (max 5)'}\n` +
           `Duration: ${durationDays} days\n` +
-          `Pricing: ${tieredPrice !== null ? `$${tieredPrice} (fixed ${guests}-person ${vehicle} rate)` : `$${basePrice}/person/day`}\n\n` +
+          `Pricing: ${tieredPrice !== null ? `$${tieredPrice} (fixed ${guests}-person rate)` : `$${basePrice}/person/day`}\n\n` +
           `Notes:\n${form.notes}`;
 
         const { error } = await supabase.from('bookings').insert({
@@ -176,7 +162,6 @@ export default function BookingPage() {
         <p className="text-gray-400 text-sm mb-8">We&apos;ve received your request for the <strong>{dest.name} Tour</strong>. Our team will contact you within 24 hours to coordinate your custom itinerary.</p>
         <div className="p-6 bg-ocean-50 rounded-2xl text-left mb-8 space-y-2">
           <div className="flex justify-between text-sm"><span className="text-gray-400">Destination</span><span className="font-medium text-ocean-900">{dest.name}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-gray-400">Vehicle</span><span className="font-medium text-ocean-900">{vehicle === 'car' ? '🚗 Car' : '🚐 Van'}</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Duration</span><span className="font-medium text-ocean-900">{durationDays} Days</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Guests</span><span className="font-medium text-ocean-900">{guests}</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Travel Date</span><span className="font-medium text-ocean-900">{date || 'TBD'}</span></div>
@@ -232,7 +217,7 @@ export default function BookingPage() {
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Choose a Tour Destination</h2>
                     <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 no-scrollbar">
                       {liveDestinations.map(d => {
-                        const hasVehiclePricing = d.vehicle_pricing && (d.vehicle_pricing.car?.length > 0 || d.vehicle_pricing.van?.length > 0);
+                        const hasVehiclePricing = d.vehicle_pricing && d.vehicle_pricing.car?.length > 0;
                         return (
                           <label key={d.id} className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedDestId === d.id ? 'border-tropical-500 bg-tropical-50' : 'border-gray-100 hover:border-gray-200'}`}>
                             <input type="radio" name="destination" value={d.id} checked={selectedDestId === d.id} onChange={() => setSelectedDestId(d.id)} className="hidden" />
@@ -262,51 +247,17 @@ export default function BookingPage() {
                 {step === 1 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Travel Details</h2>
-                    <div className="space-y-6">
 
-                      {/* Vehicle Selection */}
+                    {/* Car icon display — no selection needed */}
+                    <div className="flex items-center gap-4 mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-2xl">
+                      <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl shrink-0">🚗</div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">Select Vehicle *</label>
-                        <div className="grid grid-cols-2 gap-4">
-                          <button
-                            type="button"
-                            onClick={() => handleVehicleChange('car')}
-                            className={`relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${vehicle === 'car' ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-gray-200 hover:border-blue-200 bg-white'}`}
-                          >
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${vehicle === 'car' ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                              🚗
-                            </div>
-                            <div className="text-center">
-                              <p className={`font-bold text-sm ${vehicle === 'car' ? 'text-blue-800' : 'text-gray-700'}`}>Car</p>
-                              <p className={`text-xs mt-0.5 ${vehicle === 'car' ? 'text-blue-500' : 'text-gray-400'}`}>Up to 3 guests</p>
-                            </div>
-                            {vehicle === 'car' && (
-                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                                <Check size={12} className="text-white" />
-                              </div>
-                            )}
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleVehicleChange('van')}
-                            className={`relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${vehicle === 'van' ? 'border-tropical-500 bg-tropical-50 shadow-md' : 'border-gray-200 hover:border-tropical-200 bg-white'}`}
-                          >
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${vehicle === 'van' ? 'bg-tropical-100' : 'bg-gray-100'}`}>
-                              🚐
-                            </div>
-                            <div className="text-center">
-                              <p className={`font-bold text-sm ${vehicle === 'van' ? 'text-tropical-800' : 'text-gray-700'}`}>Van</p>
-                              <p className={`text-xs mt-0.5 ${vehicle === 'van' ? 'text-tropical-500' : 'text-gray-400'}`}>Up to 5 guests</p>
-                            </div>
-                            {vehicle === 'van' && (
-                              <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-tropical-500 flex items-center justify-center">
-                                <Check size={12} className="text-white" />
-                              </div>
-                            )}
-                          </button>
-                        </div>
+                        <p className="font-bold text-blue-800">Private Car Tour</p>
+                        <p className="text-xs text-blue-500 mt-0.5">Fully customisable private vehicle</p>
                       </div>
+                    </div>
+
+                    <div className="space-y-6">
 
                       {/* Travel Date */}
                       <div>
@@ -333,22 +284,22 @@ export default function BookingPage() {
                       {/* Number of Guests */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Number of Guests * <span className="text-gray-400 font-normal">(max {maxGuests} for {vehicle})</span>
+                          Number of Guests * <span className="text-gray-400 font-normal">(max {MAX_GUESTS})</span>
                         </label>
                         <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl">
                           <Users size={18} className="text-tropical-500" />
                           <button onClick={() => setGuests(g => Math.max(1, g - 1))} className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center font-bold transition-colors">−</button>
                           <span className="font-bold text-ocean-900 text-xl w-10 text-center">{guests}</span>
-                          <button onClick={() => setGuests(g => Math.min(maxGuests, g + 1))} className="w-9 h-9 rounded-full bg-tropical-100 hover:bg-tropical-200 flex items-center justify-center font-bold text-tropical-700 transition-colors">+</button>
+                          <button onClick={() => setGuests(g => Math.min(MAX_GUESTS, g + 1))} className="w-9 h-9 rounded-full bg-tropical-100 hover:bg-tropical-200 flex items-center justify-center font-bold text-tropical-700 transition-colors">+</button>
                           <span className="text-gray-400 text-sm">{guests > 1 ? 'guests' : 'guest'}</span>
                         </div>
 
                         {/* Live Pricing Preview */}
-                        {dest?.vehicle_pricing && (
+                        {dest?.vehicle_pricing?.car && dest.vehicle_pricing.car.length > 0 && (
                           <div className="mt-3 p-3 bg-ocean-50 border border-ocean-100 rounded-xl">
-                            <p className="text-xs font-semibold text-ocean-700 mb-1.5">Price for {vehicle === 'car' ? '🚗 Car' : '🚐 Van'}</p>
+                            <p className="text-xs font-semibold text-ocean-700 mb-1.5">🚗 Price per guest count (× days)</p>
                             <div className="flex flex-wrap gap-2">
-                              {(dest.vehicle_pricing[vehicle] ?? []).map(t => (
+                              {dest.vehicle_pricing.car.map(t => (
                                 <span key={t.guests} className={`text-xs px-2.5 py-1 rounded-lg font-semibold border transition-all ${guests === t.guests ? 'bg-ocean-700 text-white border-ocean-700' : 'bg-white text-gray-600 border-gray-200'}`}>
                                   {t.guests}p: ${t.price}
                                 </span>
@@ -407,7 +358,6 @@ export default function BookingPage() {
                     <div className="space-y-1 mb-8">
                       {[
                         { label: 'Destination', value: dest.name },
-                        { label: 'Vehicle', value: vehicle === 'car' ? '🚗 Car (max 3 guests)' : '🚐 Van (max 5 guests)' },
                         { label: 'Duration', value: `${durationDays} Days` },
                         { label: 'Travel Date', value: date || 'Not set' },
                         { label: 'Guests', value: guests.toString() },
@@ -464,10 +414,6 @@ export default function BookingPage() {
 
                 <div className="space-y-2 text-sm border-t border-gray-100 pt-4">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Vehicle</span>
-                    <span className="font-medium">{vehicle === 'car' ? '🚗 Car' : '🚐 Van'}</span>
-                  </div>
-                  <div className="flex justify-between">
                     <span className="text-gray-400">Guests</span>
                     <span className="font-medium">{guests}</span>
                   </div>
@@ -477,8 +423,8 @@ export default function BookingPage() {
                   </div>
                   {tieredPrice !== null ? (
                     <div className="flex justify-between text-xs text-gray-400">
-                      <span>Fixed {guests}-person {vehicle} rate</span>
-                      <span>${tieredPrice}</span>
+                      <span>Fixed {guests}-person rate × {durationDays}d</span>
+                      <span>${tieredPrice} × {durationDays}</span>
                     </div>
                   ) : (
                     <div className="flex justify-between text-xs text-gray-400">

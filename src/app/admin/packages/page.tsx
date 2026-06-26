@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase';
-import { Edit2, Save, X, MapPin, RefreshCw, Car, Bus } from 'lucide-react';
+import { Edit2, Save, X, MapPin, RefreshCw, Car } from 'lucide-react';
 import { destinations as staticDestinations } from '@/data/destinations';
 
 interface VehiclePriceTier {
@@ -30,12 +30,11 @@ interface Destination {
   vehicle_pricing?: VehiclePricing | null;
 }
 
-const CAR_TIERS = [1, 2, 3];
-const VAN_TIERS = [1, 2, 3, 4, 5];
+const GUEST_TIERS = [1, 2, 3, 4, 5];
 
 const emptyVehiclePricing = (): VehiclePricing => ({
-  car: CAR_TIERS.map(g => ({ guests: g, price: '' })),
-  van: VAN_TIERS.map(g => ({ guests: g, price: '' })),
+  car: GUEST_TIERS.map(g => ({ guests: g, price: '' })),
+  van: [],
 });
 
 const categoryColors: Record<string, string> = {
@@ -103,14 +102,11 @@ export default function PackagesPage() {
     // Populate vehicle pricing from existing data or defaults
     const existing = dest.vehicle_pricing;
     const pricing: VehiclePricing = {
-      car: CAR_TIERS.map(g => ({
+      car: GUEST_TIERS.map(g => ({
         guests: g,
         price: existing?.car?.find(t => t.guests === g)?.price ?? '',
       })),
-      van: VAN_TIERS.map(g => ({
-        guests: g,
-        price: existing?.van?.find(t => t.guests === g)?.price ?? '',
-      })),
+      van: [],
     };
     setEditVehiclePricing(pricing);
   };
@@ -134,7 +130,7 @@ export default function PackagesPage() {
       // Clean vehicle pricing — remove empty entries
       const cleanedVehiclePricing: VehiclePricing = {
         car: editVehiclePricing.car.filter(t => t.price !== '' && Number(t.price) > 0).map(t => ({ guests: t.guests, price: Number(t.price) })),
-        van: editVehiclePricing.van.filter(t => t.price !== '' && Number(t.price) > 0).map(t => ({ guests: t.guests, price: Number(t.price) })),
+        van: [],
       };
 
       const updatedFields = {
@@ -144,7 +140,7 @@ export default function PackagesPage() {
         category: destEditData.category ?? destToSave.category,
         price: Number(destEditData.price ?? destToSave.price),
         active: destEditData.active ?? destToSave.active,
-        vehicle_pricing: (cleanedVehiclePricing.car.length > 0 || cleanedVehiclePricing.van.length > 0) ? cleanedVehiclePricing : null,
+        vehicle_pricing: cleanedVehiclePricing.car.length > 0 ? cleanedVehiclePricing : null,
       };
 
       setDestinations(prev => prev.map(d =>
@@ -199,7 +195,7 @@ export default function PackagesPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Destinations &amp; Pricing</h2>
-          <p className="text-gray-500 text-sm">Set Car &amp; Van prices per guest count for each destination</p>
+          <p className="text-gray-500 text-sm">Set prices per guest count for each destination</p>
         </div>
         <div className="flex items-center gap-3">
           {saveMsg && <span className="text-green-600 font-medium text-sm bg-green-50 px-4 py-2 rounded-xl border border-green-200">{saveMsg}</span>}
@@ -240,66 +236,33 @@ export default function PackagesPage() {
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ocean-500" />
                 </div>
 
-                {/* Vehicle Pricing Tables */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* CAR */}
-                  <div className="border-2 border-blue-200 rounded-2xl overflow-hidden">
-                    <div className="bg-blue-50 px-4 py-3 flex items-center gap-2 border-b border-blue-200">
-                      <Car size={18} className="text-blue-600" />
-                      <div>
-                        <p className="font-bold text-blue-800 text-sm">🚗 Car Pricing</p>
-                        <p className="text-blue-500 text-xs">Max 3 guests</p>
-                      </div>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      {editVehiclePricing.car.map(tier => (
-                        <div key={tier.guests} className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-gray-600 w-20 shrink-0">
-                            {tier.guests} {tier.guests === 1 ? 'person' : 'persons'}
-                          </span>
-                          <div className="relative flex-1">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">$</span>
-                            <input
-                              type="number" min={0}
-                              placeholder="Enter price"
-                              value={tier.price}
-                              onChange={e => updateVehiclePrice('car', tier.guests, e.target.value)}
-                              className="w-full pl-7 pr-3 py-2 border-2 border-blue-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-semibold text-blue-800"
-                            />
-                          </div>
-                        </div>
-                      ))}
+                {/* Pricing Table */}
+                <div className="border-2 border-blue-200 rounded-2xl overflow-hidden">
+                  <div className="bg-blue-50 px-4 py-3 flex items-center gap-2 border-b border-blue-200">
+                    <Car size={18} className="text-blue-600" />
+                    <div>
+                      <p className="font-bold text-blue-800 text-sm">🚗 Pricing per Guest Count</p>
+                      <p className="text-blue-500 text-xs">Price per day — multiplied by number of days on booking</p>
                     </div>
                   </div>
-
-                  {/* VAN */}
-                  <div className="border-2 border-tropical-200 rounded-2xl overflow-hidden">
-                    <div className="bg-tropical-50 px-4 py-3 flex items-center gap-2 border-b border-tropical-200">
-                      <Bus size={18} className="text-tropical-600" />
-                      <div>
-                        <p className="font-bold text-tropical-800 text-sm">🚐 Van Pricing</p>
-                        <p className="text-tropical-500 text-xs">Max 5 guests</p>
-                      </div>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      {editVehiclePricing.van.map(tier => (
-                        <div key={tier.guests} className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-gray-600 w-20 shrink-0">
-                            {tier.guests} {tier.guests === 1 ? 'person' : 'persons'}
-                          </span>
-                          <div className="relative flex-1">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">$</span>
-                            <input
-                              type="number" min={0}
-                              placeholder="Enter price"
-                              value={tier.price}
-                              onChange={e => updateVehiclePrice('van', tier.guests, e.target.value)}
-                              className="w-full pl-7 pr-3 py-2 border-2 border-tropical-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-tropical-400 font-semibold text-tropical-800"
-                            />
-                          </div>
+                  <div className="p-4 space-y-3">
+                    {editVehiclePricing.car.map(tier => (
+                      <div key={tier.guests} className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-gray-600 w-20 shrink-0">
+                          {tier.guests} {tier.guests === 1 ? 'person' : 'persons'}
+                        </span>
+                        <div className="relative flex-1">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">$</span>
+                          <input
+                            type="number" min={0}
+                            placeholder="Enter price"
+                            value={tier.price}
+                            onChange={e => updateVehiclePrice('car', tier.guests, e.target.value)}
+                            className="w-full pl-7 pr-3 py-2 border-2 border-blue-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 font-semibold text-blue-800"
+                          />
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -331,32 +294,18 @@ export default function PackagesPage() {
                     <p className="text-gray-500 text-xs italic mb-3">{dest.tagline}</p>
 
                     {/* Vehicle pricing summary */}
-                    {dest.vehicle_pricing ? (
-                      <div className="flex flex-wrap gap-4">
-                        {dest.vehicle_pricing.car && dest.vehicle_pricing.car.length > 0 && (
-                          <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
-                            <p className="text-xs font-bold text-blue-600 mb-1 flex items-center gap-1"><Car size={12} /> Car</p>
-                            <div className="flex gap-2 flex-wrap">
-                              {dest.vehicle_pricing.car.map(t => (
-                                <span key={t.guests} className="text-xs text-blue-800 font-semibold">{t.guests}p: <span className="text-blue-600">${t.price}</span></span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {dest.vehicle_pricing.van && dest.vehicle_pricing.van.length > 0 && (
-                          <div className="bg-tropical-50 border border-tropical-100 rounded-xl px-3 py-2">
-                            <p className="text-xs font-bold text-tropical-600 mb-1 flex items-center gap-1"><Bus size={12} /> Van</p>
-                            <div className="flex gap-2 flex-wrap">
-                              {dest.vehicle_pricing.van.map(t => (
-                                <span key={t.guests} className="text-xs text-tropical-800 font-semibold">{t.guests}p: <span className="text-tropical-600">${t.price}</span></span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                    {dest.vehicle_pricing && dest.vehicle_pricing.car && dest.vehicle_pricing.car.length > 0 ? (
+                      <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2 inline-block">
+                        <p className="text-xs font-bold text-blue-600 mb-1 flex items-center gap-1"><Car size={12} /> Pricing per Guest</p>
+                        <div className="flex gap-3 flex-wrap">
+                          {dest.vehicle_pricing.car.map(t => (
+                            <span key={t.guests} className="text-xs text-blue-800 font-semibold">{t.guests}p: <span className="text-blue-600">${t.price}</span></span>
+                          ))}
+                        </div>
                       </div>
                     ) : (
                       <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 inline-block">
-                        ⚠️ No vehicle pricing set yet — click Edit to add Car &amp; Van prices
+                        ⚠️ No pricing set yet — click Edit to add prices
                       </p>
                     )}
                   </div>

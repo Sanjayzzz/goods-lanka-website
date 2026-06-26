@@ -104,39 +104,21 @@ export default function DestinationModal({ destination, isOpen, onClose, vehicle
                   {destination.description}
                 </p>
 
-                {vehiclePricing && (vehiclePricing.car?.length > 0 || vehiclePricing.van?.length > 0) ? (
+                {vehiclePricing && vehiclePricing.car?.length > 0 ? (
                   <div className="mb-6 rounded-2xl border border-ocean-100 overflow-hidden shadow-sm">
-                    <div className="bg-ocean-50 px-4 py-2 border-b border-ocean-100">
-                      <p className="text-[10px] text-ocean-600 uppercase tracking-wider font-bold">Tour Pricing</p>
+                    <div className="bg-ocean-50 px-4 py-2 border-b border-ocean-100 flex items-center gap-2">
+                      <span className="text-base">🚗</span>
+                      <p className="text-[10px] text-ocean-600 uppercase tracking-wider font-bold">Tour Pricing per Guest</p>
                     </div>
-                    <div className="grid grid-cols-2 divide-x divide-gray-100">
-                      {/* Car */}
-                      <div className="p-3">
-                        <p className="text-xs font-bold text-blue-600 mb-2 flex items-center gap-1">🚗 Car <span className="text-gray-400 font-normal text-[10px]">(max 3)</span></p>
-                        <div className="space-y-1">
-                          {(vehiclePricing.car ?? []).map(t => (
-                            <div key={t.guests} className="flex justify-between text-xs">
-                              <span className="text-gray-500">{t.guests} {t.guests === 1 ? 'person' : 'persons'}</span>
-                              <span className="font-bold text-ocean-800">${t.price}</span>
-                            </div>
-                          ))}
-                          {(!vehiclePricing.car || vehiclePricing.car.length === 0) && <p className="text-xs text-gray-400">Not set</p>}
+                    <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {(vehiclePricing.car ?? []).map(t => (
+                        <div key={t.guests} className="flex justify-between items-center bg-ocean-50/60 rounded-lg px-3 py-1.5 text-xs">
+                          <span className="text-gray-500">{t.guests} {t.guests === 1 ? 'person' : 'persons'}</span>
+                          <span className="font-bold text-ocean-800">${t.price}</span>
                         </div>
-                      </div>
-                      {/* Van */}
-                      <div className="p-3">
-                        <p className="text-xs font-bold text-tropical-600 mb-2 flex items-center gap-1">🚐 Van <span className="text-gray-400 font-normal text-[10px]">(max 5)</span></p>
-                        <div className="space-y-1">
-                          {(vehiclePricing.van ?? []).map(t => (
-                            <div key={t.guests} className="flex justify-between text-xs">
-                              <span className="text-gray-500">{t.guests} {t.guests === 1 ? 'person' : 'persons'}</span>
-                              <span className="font-bold text-ocean-800">${t.price}</span>
-                            </div>
-                          ))}
-                          {(!vehiclePricing.van || vehiclePricing.van.length === 0) && <p className="text-xs text-gray-400">Not set</p>}
-                        </div>
-                      </div>
+                      ))}
                     </div>
+                    <p className="text-[10px] text-gray-400 px-3 pb-2">× number of days = total price</p>
                   </div>
                 ) : destination.price ? (
                   <div className="mb-6 p-4 bg-gradient-to-r from-ocean-50 to-tropical-50/30 rounded-2xl border border-ocean-100/60 flex items-center justify-between shadow-sm">
