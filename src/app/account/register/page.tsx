@@ -19,11 +19,20 @@ export default function RegisterPage() {
     if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
     setLoading(true);
     setError('');
+    // Create a gravatar URL fallback as the initial profile photo
+    const emailNormalized = form.email.trim().toLowerCase();
+    const avatarUrl = `https://www.gravatar.com/avatar/${emailNormalized}?d=mp&s=150`;
+
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
-      options: { data: { full_name: form.name } },
+      options: { 
+        data: { 
+          full_name: form.name,
+          avatar_url: avatarUrl
+        } 
+      },
     });
     if (authError) { setError(authError.message); setLoading(false); }
     else { setSuccess(true); }
