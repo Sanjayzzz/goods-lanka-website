@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { destinations, Destination } from '@/data/destinations';
 import { createClient } from '@/lib/supabase';
-import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle } from 'lucide-react';
+import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle, MessageCircle } from 'lucide-react';
 
 const steps = ['Select Tour', 'Travel Details', 'Personal Info', 'Confirmation'];
 
@@ -27,6 +27,34 @@ function getTieredPrice(
   if (!tiers || tiers.length === 0) return null;
   const match = tiers.find(t => t.guests === guests);
   return match ? match.price : null;
+}
+
+function getWhatsAppUrl(
+  destName: string,
+  durationDays: number,
+  guests: number,
+  date: string,
+  form: { name: string; email: string; phone: string; country: string; notes: string; },
+  total: number
+): string {
+  const number = '94777266044';
+  const text = `Hello GODS LANKA! I have just booked a tour on your website. Here are the details:
+
+🏝️ Tour: ${destName} Tour
+📅 Travel Date: ${date || 'TBD'}
+⏳ Duration: ${durationDays} Days
+👥 Guests: ${guests}
+💰 Total Est. Price: $${total.toLocaleString()}
+
+👤 Name: ${form.name}
+✉️ Email: ${form.email}
+📞 Phone: ${form.phone}
+📍 Country: ${form.country}
+📝 Special Requests: ${form.notes || 'None'}
+
+Please confirm my booking. Thank you!`;
+
+  return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
 }
 
 export default function BookingPage() {
@@ -141,6 +169,12 @@ export default function BookingPage() {
           setSubmitError(`Failed to save booking: ${error.message}`);
         } else {
           setBooked(true);
+          try {
+            const url = getWhatsAppUrl(dest.name, durationDays, guests, date, form, total);
+            window.open(url, '_blank');
+          } catch (e) {
+            console.error('Failed to auto-open WhatsApp link:', e);
+          }
         }
       } catch (err) {
         setSubmitError(`Unexpected error: ${String(err)}`);
@@ -159,7 +193,19 @@ export default function BookingPage() {
         </div>
         <h1 className="font-[var(--font-playfair)] text-3xl font-bold text-ocean-900 mb-3">Tour Booked!</h1>
         <p className="text-gray-400 mb-2">Thank you, {form.name || 'Traveler'}!</p>
-        <p className="text-gray-400 text-sm mb-8">We&apos;ve received your request for the <strong>{dest.name} Tour</strong>. Our team will contact you within 24 hours to coordinate your custom itinerary.</p>
+        <p className="text-gray-400 text-sm mb-6">We&apos;ve received your request for the <strong>{dest.name} Tour</strong>. Our team will contact you within 24 hours to coordinate your custom itinerary.</p>
+        
+        {/* WhatsApp Notification Alert */}
+        <div className="mb-6 p-4 rounded-2xl bg-green-50 border border-green-200 text-left">
+          <p className="text-green-800 text-sm font-semibold mb-2 flex items-center gap-1.5">
+            <MessageCircle size={16} className="text-green-600" fill="white" />
+            <span>Instant WhatsApp Confirmation</span>
+          </p>
+          <p className="text-green-700 text-xs leading-relaxed">
+            We have also opened a WhatsApp tab for you. If it didn&apos;t open or got blocked, click the green button below to send your booking details to us for instant verification and approval!
+          </p>
+        </div>
+
         <div className="p-6 bg-ocean-50 rounded-2xl text-left mb-8 space-y-2">
           <div className="flex justify-between text-sm"><span className="text-gray-400">Destination</span><span className="font-medium text-ocean-900">{dest.name}</span></div>
           <div className="flex justify-between text-sm"><span className="text-gray-400">Duration</span><span className="font-medium text-ocean-900">{durationDays} Days</span></div>
@@ -167,13 +213,26 @@ export default function BookingPage() {
           <div className="flex justify-between text-sm"><span className="text-gray-400">Travel Date</span><span className="font-medium text-ocean-900">{date || 'TBD'}</span></div>
           <div className="flex justify-between font-bold border-t border-gray-200 pt-2"><span className="text-gray-700">Total Est. Price</span><span className="text-ocean-900">${total.toLocaleString()}</span></div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/account/my-bookings" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-full hover:scale-105 transition-all">
-            View My Bookings →
-          </Link>
-          <Link href="/" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-full hover:bg-gray-200 transition-all">
-            Back to Home
-          </Link>
+
+        <div className="flex flex-col gap-3 justify-center">
+          <a
+            href={getWhatsAppUrl(dest.name, durationDays, guests, date, form, total)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white font-bold rounded-full hover:scale-105 transition-all shadow-md shadow-green-200/50"
+          >
+            <MessageCircle size={18} fill="white" />
+            Send Booking to WhatsApp
+          </a>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-2">
+            <Link href="/account/my-bookings" className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white font-semibold rounded-full hover:scale-105 transition-all text-sm">
+              View My Bookings →
+            </Link>
+            <Link href="/" className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-gray-100 text-gray-700 font-semibold rounded-full hover:bg-gray-200 transition-all text-sm">
+              Back to Home
+            </Link>
+          </div>
         </div>
       </motion.div>
     </main>
