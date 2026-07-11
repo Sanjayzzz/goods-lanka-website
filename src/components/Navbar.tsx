@@ -273,7 +273,7 @@ export default function Navbar() {
               className="lg:hidden bg-white border-t border-gray-100 shadow-xl"
             >
               <div className="px-4 py-4 space-y-1 max-h-[70vh] overflow-y-auto">
-                {navLinks.map((link) => (
+                 {navLinks.map((link) => (
                   <div key={link.name}>
                     <Link
                       href={link.href}
@@ -298,13 +298,73 @@ export default function Navbar() {
                     )}
                   </div>
                 ))}
-                <Link
-                  href="/booking"
-                  onClick={() => setMobileOpen(false)}
-                  className="block mx-4 mt-4 text-center px-5 py-3 bg-gradient-to-r from-sunset-500 to-coral-500 text-white font-semibold rounded-full"
-                >
-                  Book Now
-                </Link>
+
+                {/* Mobile Account Section */}
+                {userName ? (
+                  <div className="border-t border-gray-150 mt-4 pt-4 space-y-1">
+                    <div className="flex items-center gap-3 px-4 py-2 mb-2 bg-ocean-50/50 rounded-2xl">
+                      {userAvatar ? (
+                        <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-gray-200">
+                          <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-tropical-500 to-ocean-600 flex items-center justify-center text-white text-sm font-bold uppercase shrink-0">
+                          {userName[0]}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-semibold text-gray-800 text-sm">{userName}</p>
+                        <p className="text-gray-400 text-xs">Logged In</p>
+                      </div>
+                    </div>
+                    <Link
+                      href="/account/my-bookings"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-ocean-50 hover:text-ocean-700 transition-colors rounded-lg font-medium"
+                    >
+                      <CalendarCheck size={16} /> My Bookings
+                    </Link>
+                    <Link
+                      href="/account/profile"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-ocean-50 hover:text-ocean-700 transition-colors rounded-lg font-medium"
+                    >
+                      <Settings size={16} /> Profile Settings
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        const supabase = createClient();
+                        await supabase.auth.signOut();
+                        setUserName(null);
+                        setMobileOpen(false);
+                        window.location.href = '/';
+                      }}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-lg font-medium text-left"
+                    >
+                      <LogOut size={16} /> Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="border-t border-gray-150 mt-4 pt-4">
+                    <Link
+                      href="/account/login"
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-3 text-sm text-gray-700 hover:bg-ocean-50 hover:text-ocean-700 transition-colors rounded-lg font-medium"
+                    >
+                      <User size={16} /> Sign In
+                    </Link>
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <Link
+                    href="/booking"
+                    onClick={() => setMobileOpen(false)}
+                    className="block text-center px-5 py-3.5 bg-gradient-to-r from-sunset-500 to-coral-500 text-white font-semibold rounded-full shadow-lg"
+                  >
+                    Book Now
+                  </Link>
+                </div>
               </div>
             </motion.div>
           )}

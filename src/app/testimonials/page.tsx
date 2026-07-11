@@ -1,14 +1,46 @@
-import type { Metadata } from 'next';
-import Image from 'next/image';
-import { testimonials } from '@/data/testimonials';
-import { Star, Quote } from 'lucide-react';
+'use client';
 
-export const metadata: Metadata = {
-  title: "Testimonials | GODS LANKA Tours & Travels",
-  description: "Read what our travelers say about their Sri Lanka experience with GODS LANKA Tours & Travels.",
-};
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { testimonials as staticTestimonials } from '@/data/testimonials';
+import { Star, Quote } from 'lucide-react';
+import { createClient } from '@/lib/supabase';
 
 export default function TestimonialsPage() {
+  const [dbReviews, setDbReviews] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('package_slug', 'general')
+        .order('created_at', { ascending: false });
+      
+      if (data) {
+        setDbReviews(data);
+      }
+    };
+    fetchReviews();
+  }, []);
+
+  const allTestimonials = [
+    ...dbReviews.map(r => ({
+      id: r.id,
+      name: r.author_name,
+      country: 'Verified Guest',
+      avatar: r.author_name.substring(0, 2).toUpperCase(),
+      avatar_url: r.avatar_url,
+      rating: r.rating,
+      title: r.rating === 5 ? 'Excellent Experience' : 'Great Service',
+      review: r.comment,
+      tourPackage: 'GODS LANKA Tour',
+      date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    })),
+    ...staticTestimonials
+  ];
+
   return (
     <main className="pt-24 lg:pt-32">
       {/* Hero */}
@@ -33,7 +65,7 @@ export default function TestimonialsPage() {
                   <Star key={i} size={20} className="text-sunset-400 fill-sunset-400" />
                 ))}
               </div>
-              <p className="text-gray-400 text-sm">Based on {testimonials.length * 40}+ reviews</p>
+              <p className="text-gray-400 text-sm">Based on {allTestimonials.length * 40}+ reviews</p>
             </div>
             <div className="space-y-2 w-full max-w-xs">
               {[
@@ -61,40 +93,48 @@ export default function TestimonialsPage() {
       <section className="py-16 sm:py-24">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {testimonials.map((t) => (
-              <div key={t.id} className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-400 hover:-translate-y-2 p-7 relative group">
-                {/* Quote icon */}
-                <div className="absolute -top-3 right-6 w-8 h-8 rounded-full bg-gradient-to-r from-sunset-400 to-coral-500 flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity">
-                  <Quote size={14} className="text-white" />
-                </div>
-
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={15} className={i < t.rating ? 'text-sunset-400 fill-sunset-400' : 'text-gray-200'} />
-                  ))}
-                </div>
-
-                {/* Title & Review */}
-                <h3 className="font-[var(--font-playfair)] text-lg font-bold text-ocean-900 mb-3">&ldquo;{t.title}&rdquo;</h3>
-                <p className="text-gray-400 text-sm leading-relaxed mb-6">{t.review}</p>
-
-                {/* Author */}
-                <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-ocean-500 to-tropical-500 flex items-center justify-center text-white font-bold text-sm">
-                    {t.avatar}
+            {allTestimonials.map((t) => (
+              <div key={t.id} className="bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-400 hover:-translate-y-2 p-7 relative group flex flex-col justify-between">
+                <div>
+                  {/* Quote icon */}
+                  <div className="absolute -top-3 right-6 w-8 h-8 rounded-full bg-gradient-to-r from-sunset-400 to-coral-500 flex items-center justify-center opacity-80 group-hover:opacity-100 transition-opacity">
+                    <Quote size={14} className="text-white" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-ocean-900 text-sm">{t.name}</p>
-                    <p className="text-gray-400 text-xs">{t.country} • {t.date}</p>
+
+                  {/* Stars */}
+                  <div className="flex gap-0.5 mb-4">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={15} className={i < t.rating ? 'text-sunset-400 fill-sunset-400' : 'text-gray-200'} />
+                    ))}
                   </div>
+
+                  {/* Title & Review */}
+                  <h3 className="font-[var(--font-playfair)] text-lg font-bold text-ocean-900 mb-3">&ldquo;{t.title}&rdquo;</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed mb-6">{t.review}</p>
                 </div>
 
-                {/* Tour badge */}
-                <div className="mt-4">
-                  <span className="inline-block px-3 py-1 rounded-full bg-ocean-50 text-ocean-700 text-xs font-medium">
-                    {t.tourPackage}
-                  </span>
+                <div>
+                  {/* Author */}
+                  <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-ocean-500 to-tropical-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden border border-ocean-100 shrink-0">
+                      {t.avatar_url ? (
+                        <img src={t.avatar_url} alt={t.name} className="w-full h-full object-cover" />
+                      ) : (
+                        t.avatar
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-ocean-900 text-sm">{t.name}</p>
+                      <p className="text-gray-400 text-xs">{t.country} • {t.date}</p>
+                    </div>
+                  </div>
+
+                  {/* Tour badge */}
+                  <div className="mt-4">
+                    <span className="inline-block px-3 py-1 rounded-full bg-ocean-50 text-ocean-700 text-xs font-medium">
+                      {t.tourPackage}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
