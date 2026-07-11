@@ -117,6 +117,9 @@ export default function TestimonialCarousel() {
                 window.location.href = `/account/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
                 return;
               }
+              // Automatically grab the full name from user metadata or fallback to email prefix
+              const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Guest';
+              setName(fullName);
               setIsModalOpen(true);
             }}
             className="inline-flex items-center gap-2 px-6 py-3 bg-ocean-700 text-white rounded-full font-medium hover:bg-ocean-800 transition-colors shadow-md"
@@ -236,13 +239,10 @@ export default function TestimonialCarousel() {
                   <h3 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Write a Review</h3>
                   <form onSubmit={handleSubmitReview} className="space-y-4 text-left">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-                      <input 
-                        type="text" required
-                        value={name} onChange={e => setName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 transition-shadow"
-                        placeholder="John Doe"
-                      />
+                      <label className="block text-sm font-medium text-gray-400 mb-1">Posting as</label>
+                      <div className="w-full px-4 py-3 rounded-xl border border-gray-150 bg-gray-50 text-gray-600 font-semibold text-sm select-none">
+                        {name}
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
