@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { testimonials as staticTestimonials } from '@/data/testimonials';
 import { Star, Quote } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 
@@ -25,21 +24,18 @@ export default function TestimonialsPage() {
     fetchReviews();
   }, []);
 
-  const allTestimonials = [
-    ...dbReviews.map(r => ({
-      id: r.id,
-      name: r.author_name,
-      country: 'Verified Guest',
-      avatar: r.author_name.substring(0, 2).toUpperCase(),
-      avatar_url: r.avatar_url,
-      rating: r.rating,
-      title: r.rating === 5 ? 'Excellent Experience' : 'Great Service',
-      review: r.comment,
-      tourPackage: 'GODS LANKA Tour',
-      date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-    })),
-    ...staticTestimonials
-  ];
+  const allTestimonials = dbReviews.map(r => ({
+    id: r.id,
+    name: r.author_name,
+    country: 'Verified Guest',
+    avatar: r.author_name.substring(0, 2).toUpperCase(),
+    avatar_url: r.avatar_url,
+    rating: r.rating,
+    title: r.rating === 5 ? 'Excellent Experience' : 'Great Service',
+    review: r.comment,
+    tourPackage: 'GODS LANKA Tour',
+    date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  }));
 
   return (
     <main className="pt-24 lg:pt-32">

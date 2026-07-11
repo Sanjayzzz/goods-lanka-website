@@ -182,7 +182,7 @@ export default function Navbar() {
             <div className="flex items-center gap-2 sm:gap-3">
               {/* My Account Dropdown */}
               {userName ? (
-                <div className="relative hidden sm:block">
+                <div className="relative">
                   <button
                     onClick={() => setAccountDropdown(d => !d)}
                     onBlur={() => setTimeout(() => setAccountDropdown(false), 150)}
@@ -236,7 +236,7 @@ export default function Navbar() {
                 </div>
               ) : (
                 <Link href="/account/login"
-                  className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${
                     scrolled ? 'text-ocean-700 hover:bg-ocean-50' : 'text-white/90 hover:bg-white/10'
                   }`}>
                   <User size={15} /> Sign In

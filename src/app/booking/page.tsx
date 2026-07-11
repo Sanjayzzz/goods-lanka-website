@@ -11,24 +11,10 @@ import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle, M
 
 const steps = ['Select Tour', 'Travel Details', 'Personal Info', 'Confirmation'];
 
-interface VehiclePriceTier { guests: number; price: number; }
-interface VehiclePricing { car: VehiclePriceTier[]; van: VehiclePriceTier[]; }
 interface LiveDestination extends Destination {
-  vehicle_pricing?: VehiclePricing | null;
 }
 
 const MAX_GUESTS = 5;
-
-function getTieredPrice(
-  vehiclePricing: VehiclePricing | null | undefined,
-  guests: number
-): number | null {
-  if (!vehiclePricing) return null;
-  const tiers = vehiclePricing.car;
-  if (!tiers || tiers.length === 0) return null;
-  const match = tiers.find(t => t.guests === guests);
-  return match ? match.price : null;
-}
 
 function getWhatsAppUrl(
   destName: string,
@@ -90,10 +76,10 @@ export default function BookingPage() {
       }));
       setAuthChecking(false);
 
-      // Load live destinations with vehicle_pricing
+      // Load live destinations
       const { data: dbDests } = await supabase
         .from('destinations')
-        .select('id, name, slug, price, active, vehicle_pricing');
+        .select('id, name, slug, price, active');
 
       if (dbDests) {
         const liveMap = new Map(dbDests.map(d => [d.slug, d]));
@@ -107,10 +93,9 @@ export default function BookingPage() {
               ...d,
               id: live.id,
               price: Number(live.price) || 99,
-              vehicle_pricing: live.vehicle_pricing ?? null,
             } as LiveDestination;
           }
-          return { ...d, price: d.price ?? 99, vehicle_pricing: null } as LiveDestination;
+          return { ...d, price: d.price ?? 99 } as LiveDestination;
         });
         setLiveDestinations(updatedDests);
 
@@ -129,10 +114,9 @@ export default function BookingPage() {
 
   const dest = (liveDestinations.find(d => d.id === selectedDestId) || liveDestinations[0]) as LiveDestination;
 
-  // Get price from tiers or fall back to base price
-  const tieredPrice = getTieredPrice(dest?.vehicle_pricing, guests);
+  // Get price
   const basePrice = dest?.price ?? 99;
-  const total = tieredPrice !== null ? tieredPrice * durationDays : basePrice * durationDays * guests;
+  const total = basePrice * durationDays * guests;
 
   if (authChecking) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -150,7 +134,7 @@ export default function BookingPage() {
         const supabase = createClient();
         const formattedNotes =
           `Duration: ${durationDays} days\n` +
-          `Pricing: ${tieredPrice !== null ? `$${tieredPrice} (fixed ${guests}-person rate)` : `$${basePrice}/person/day`}\n\n` +
+          `Pricing: $${basePrice}/person/day\n\n` +
           `Notes:\n${form.notes}`;
 
         const { error } = await supabase.from('bookings').insert({
@@ -196,7 +180,6 @@ export default function BookingPage() {
         <p className="text-gray-400 mb-2">Thank you, {form.name || 'Traveler'}!</p>
         <p className="text-gray-400 text-sm mb-6">We&apos;ve received your request for the <strong>{dest.name} Tour</strong>. Our team will contact you within 24 hours to coordinate your custom itinerary.</p>
         
-        {/* WhatsApp Notification Alert */}
         <div className="mb-6 p-4 rounded-2xl bg-green-50 border border-green-200 text-left">
           <p className="text-green-800 text-sm font-semibold mb-2 flex items-center gap-1.5">
             <MessageCircle size={16} className="text-green-600" fill="white" />
@@ -241,7 +224,6 @@ export default function BookingPage() {
 
   return (
     <main className="pt-24 lg:pt-32 bg-gray-50/50 min-h-screen">
-      {/* Hero */}
       <section className="relative h-48 overflow-hidden">
         <Image src="https://images.unsplash.com/photo-1612862862126-865765df2ded?w=1600&q=80" alt="Book your Sri Lanka tour" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-ocean-950/75" />
@@ -252,7 +234,6 @@ export default function BookingPage() {
 
       <section className="py-12 sm:py-20">
         <div className="max-w-5xl mx-auto px-6">
-          {/* Step Indicator */}
           <div className="flex items-center justify-between mb-12 relative">
             <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-200 z-0" />
             <div className="absolute top-4 left-0 h-0.5 bg-gradient-to-r from-ocean-500 to-tropical-500 z-0 transition-all duration-500" style={{ width: `${(step / (steps.length - 1)) * 100}%` }} />
@@ -267,50 +248,39 @@ export default function BookingPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Form */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-3xl shadow-premium p-8">
 
-                {/* ── STEP 0: SELECT TOUR ── */}
                 {step === 0 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Choose a Tour Destination</h2>
                     <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 no-scrollbar">
-                      {liveDestinations.map(d => {
-                        const hasVehiclePricing = d.vehicle_pricing && d.vehicle_pricing.car?.length > 0;
-                        return (
-                          <label key={d.id} className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedDestId === d.id ? 'border-tropical-500 bg-tropical-50' : 'border-gray-100 hover:border-gray-200'}`}>
-                            <input type="radio" name="destination" value={d.id} checked={selectedDestId === d.id} onChange={() => setSelectedDestId(d.id)} className="hidden" />
-                            <div className="relative w-16 h-12 rounded-xl overflow-hidden shrink-0">
-                              <Image src={d.image} alt={d.name} fill className="object-cover" sizes="64px" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-ocean-900 text-sm truncate">{d.name}</p>
-                              <p className="text-gray-400 text-xs">{d.category}</p>
-                            </div>
-                            <div className="text-right shrink-0 text-xs text-gray-400">
-                              {hasVehiclePricing ? (
-                                <span className="text-tropical-600 font-semibold">Tiered pricing ✓</span>
-                              ) : (
-                                <span>${d.price || 99}/day</span>
-                              )}
-                            </div>
-                            {selectedDestId === d.id && <Check size={18} className="text-tropical-500 shrink-0" />}
-                          </label>
-                        );
-                      })}
+                      {liveDestinations.map(d => (
+                        <label key={d.id} className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all ${selectedDestId === d.id ? 'border-tropical-500 bg-tropical-50' : 'border-gray-100 hover:border-gray-200'}`}>
+                          <input type="radio" name="destination" value={d.id} checked={selectedDestId === d.id} onChange={() => setSelectedDestId(d.id)} className="hidden" />
+                          <div className="relative w-16 h-12 rounded-xl overflow-hidden shrink-0">
+                            <Image src={d.image} alt={d.name} fill className="object-cover" sizes="64px" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-ocean-900 text-sm truncate">{d.name}</p>
+                            <p className="text-gray-400 text-xs">{d.category}</p>
+                          </div>
+                          <div className="text-right shrink-0 text-xs text-gray-400">
+                            <span>${d.price || 99}/day</span>
+                          </div>
+                          {selectedDestId === d.id && <Check size={18} className="text-tropical-500 shrink-0" />}
+                        </label>
+                      ))}
                     </div>
                   </motion.div>
                 )}
 
-                {/* ── STEP 1: TRAVEL DETAILS ── */}
                 {step === 1 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Travel Details</h2>
 
                     <div className="space-y-6">
 
-                      {/* Travel Date */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Travel Date *</label>
                         <div className="relative">
@@ -320,7 +290,6 @@ export default function BookingPage() {
                         </div>
                       </div>
 
-                      {/* Number of Days */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Number of Days *</label>
                         <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl">
@@ -332,7 +301,6 @@ export default function BookingPage() {
                         </div>
                       </div>
 
-                      {/* Number of Guests */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Number of Guests * <span className="text-gray-400 font-normal">(max {MAX_GUESTS})</span>
@@ -344,29 +312,11 @@ export default function BookingPage() {
                           <button onClick={() => setGuests(g => Math.min(MAX_GUESTS, g + 1))} className="w-9 h-9 rounded-full bg-tropical-100 hover:bg-tropical-200 flex items-center justify-center font-bold text-tropical-700 transition-colors">+</button>
                           <span className="text-gray-400 text-sm">{guests > 1 ? 'guests' : 'guest'}</span>
                         </div>
-
-                        {/* Live Pricing Preview */}
-                        {dest?.vehicle_pricing?.car && dest.vehicle_pricing.car.length > 0 && (
-                          <div className="mt-3 p-3 bg-ocean-50 border border-ocean-100 rounded-xl">
-                            <p className="text-xs font-semibold text-ocean-700 mb-1.5 flex items-center gap-1.5">
-                              <Users size={14} className="text-ocean-600" />
-                              <span>Price per guest count (× days)</span>
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {dest.vehicle_pricing.car.map(t => (
-                                <span key={t.guests} className={`text-xs px-2.5 py-1 rounded-lg font-semibold border transition-all ${guests === t.guests ? 'bg-ocean-700 text-white border-ocean-700' : 'bg-white text-gray-600 border-gray-200'}`}>
-                                  {t.guests}p: ${t.price}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </motion.div>
                 )}
 
-                {/* ── STEP 2: PERSONAL INFO ── */}
                 {step === 2 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Personal Information</h2>
@@ -414,7 +364,6 @@ export default function BookingPage() {
                   </motion.div>
                 )}
 
-                {/* ── STEP 3: CONFIRMATION ── */}
                 {step === 3 && (
                   <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                     <h2 className="font-[var(--font-playfair)] text-2xl font-bold text-ocean-900 mb-6">Review &amp; Confirm</h2>
@@ -433,10 +382,7 @@ export default function BookingPage() {
                         </div>
                       ))}
                       <div className="flex justify-between py-4 font-bold text-base">
-                        <span className="text-gray-700">
-                          Total Est. Price
-                          {tieredPrice !== null && <span className="text-xs font-normal text-gray-400 ml-1">(fixed {guests}-person rate)</span>}
-                        </span>
+                        <span className="text-gray-700">Total Est. Price</span>
                         <span className="text-ocean-900 text-xl">${total.toLocaleString()}</span>
                       </div>
                     </div>
@@ -447,7 +393,6 @@ export default function BookingPage() {
                   </motion.div>
                 )}
 
-                {/* Navigation */}
                 {submitError && (
                   <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">{submitError}</div>
                 )}
@@ -465,7 +410,6 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* Summary Sidebar */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-3xl shadow-premium p-6 sticky top-28">
                 <h3 className="font-semibold text-ocean-900 mb-4">Tour Summary</h3>
@@ -484,17 +428,10 @@ export default function BookingPage() {
                     <span className="text-gray-400">Duration</span>
                     <span className="font-medium">{durationDays} days</span>
                   </div>
-                  {tieredPrice !== null ? (
-                    <div className="flex justify-between text-xs text-gray-400">
-                      <span>Fixed {guests}-person rate × {durationDays}d</span>
-                      <span>${tieredPrice} × {durationDays}</span>
-                    </div>
-                  ) : (
-                    <div className="flex justify-between text-xs text-gray-400">
-                      <span>${basePrice} × {guests} × {durationDays}d</span>
-                      <span>${total.toLocaleString()}</span>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-xs text-gray-400">
+                    <span>${basePrice} × {guests} × {durationDays}d</span>
+                    <span>${total.toLocaleString()}</span>
+                  </div>
                   <div className="flex justify-between font-bold text-base pt-2 border-t border-gray-100">
                     <span>Total</span>
                     <span className="text-ocean-900">${total.toLocaleString()}</span>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Search, Calendar, Users, ChevronDown, ChevronRight, Play } from 'lucide-react';
+import { Search, Calendar, Users, ChevronDown, ChevronRight } from 'lucide-react';
 
 const heroSlides = [
   {
@@ -128,12 +128,6 @@ export default function HeroSection() {
               >
                 Explore Destinations <ChevronRight size={18} />
               </Link>
-              <button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="w-full sm:w-auto px-8 py-4 bg-white/10 backdrop-blur-md text-white font-semibold rounded-full border border-white/30 hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2"
-              >
-                <Play size={18} /> Watch Video
-              </button>
             </div>
           </motion.div>
         </AnimatePresence>

@@ -3,7 +3,7 @@
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { useRef, useState, FormEvent, useEffect } from 'react';
 import { Star, ChevronLeft, ChevronRight, Quote, MessageSquarePlus, X, CheckCircle } from 'lucide-react';
-import { testimonials } from '@/data/testimonials';
+
 import { createClient } from '@/lib/supabase';
 
 export default function TestimonialCarousel() {
@@ -42,7 +42,7 @@ export default function TestimonialCarousel() {
       tourPackage: 'GODS LANKA Tour',
       date: new Date(r.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
     })),
-    ...testimonials
+    
   ];
 
   const next = () => setCurrent((p) => (p + 1) % allTestimonials.length);
@@ -93,7 +93,16 @@ export default function TestimonialCarousel() {
     }
   };
 
-  const t = allTestimonials[current] || testimonials[0];
+    if (allTestimonials.length === 0) {
+    return (
+      <section ref={ref} className="py-20 sm:py-28 bg-gradient-to-b from-white to-ocean-50/50">
+        <div className="max-w-7xl mx-auto px-6 text-center py-12">
+          <p className="text-gray-500">No reviews yet.</p>
+        </div>
+      </section>
+    );
+  }
+  const t = allTestimonials[current];
 
   return (
     <section ref={ref} className="py-20 sm:py-28 bg-gradient-to-b from-white to-ocean-50/50">
@@ -108,8 +117,16 @@ export default function TestimonialCarousel() {
           <h2 className="font-[var(--font-playfair)] text-3xl sm:text-4xl lg:text-5xl font-bold text-ocean-900 mb-4">What Our Travelers Say</h2>
           <div className="section-divider mx-auto mb-8" />
           
-          <button 
-            onClick={() => setIsModalOpen(true)}
+          <button
+            onClick={async () => {
+              const supabase = createClient();
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) {
+                window.location.href = `/account/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                return;
+              }
+              setIsModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 px-6 py-3 bg-ocean-700 text-white rounded-full font-medium hover:bg-ocean-800 transition-colors shadow-md"
           >
             <MessageSquarePlus size={18} />
