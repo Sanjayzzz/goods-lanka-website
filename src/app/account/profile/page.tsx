@@ -170,7 +170,16 @@ export default function ProfilePage() {
                   {userAvatar ? (
                     <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
-                    <User size={48} className="text-gray-300" />
+                    <img
+                      src={`https://www.gravatar.com/avatar/${userEmail.trim().toLowerCase()}?d=mp&s=200`}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.onerror = null;
+                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName || 'U')}&background=0D8ABC&color=fff&size=200`;
+                      }}
+                    />
                   )}
                   
                   <div 

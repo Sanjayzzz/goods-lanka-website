@@ -33,6 +33,7 @@ export default function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [accountDropdown, setAccountDropdown] = useState(false);
 
   useEffect(() => {
@@ -41,9 +42,11 @@ export default function Navbar() {
       if (user) {
         setUserName(user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? 'Account');
         setUserAvatar(user.user_metadata?.avatar_url ?? null);
+        setUserEmail(user.email ?? null);
       } else {
         setUserName(null);
         setUserAvatar(null);
+        setUserEmail(null);
       }
     });
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -51,9 +54,11 @@ export default function Navbar() {
       if (u) {
         setUserName(u.user_metadata?.full_name ?? u.email?.split('@')[0] ?? 'Account');
         setUserAvatar(u.user_metadata?.avatar_url ?? null);
+        setUserEmail(u.email ?? null);
       } else {
         setUserName(null);
         setUserAvatar(null);
+        setUserEmail(null);
       }
     });
     return () => listener.subscription.unsubscribe();
@@ -188,13 +193,22 @@ export default function Navbar() {
                     className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all ${
                       scrolled ? 'text-ocean-700 hover:bg-ocean-50' : 'text-white/90 hover:bg-white/10'
                     }`}>
-                    {userAvatar ? (
+                    {(userAvatar || userEmail) ? (
                       <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 border border-white/20">
-                        <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
+                        <img
+                          src={userAvatar || `https://www.gravatar.com/avatar/${userEmail?.trim().toLowerCase()}?d=mp&s=80`}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            target.onerror = null;
+                            target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName ?? 'U')}&background=0D8ABC&color=fff&size=80`;
+                          }}
+                        />
                       </div>
                     ) : (
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-tropical-500 to-ocean-600 flex items-center justify-center text-white text-xs font-bold uppercase shrink-0">
-                        {userName[0]}
+                        {userName ? userName[0] : 'U'}
                       </div>
                     )}
                     <span className="hidden lg:inline">{userName}</span>

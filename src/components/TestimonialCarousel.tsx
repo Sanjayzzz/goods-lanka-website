@@ -163,11 +163,16 @@ export default function TestimonialCarousel() {
                 {/* Author */}
                 <div className="flex flex-col items-center">
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-ocean-500 to-tropical-500 flex items-center justify-center text-white font-bold text-lg mb-3 overflow-hidden border-2 border-ocean-100">
-                    {t.avatar_url ? (
-                      <img src={t.avatar_url} alt={t.name} className="w-full h-full object-cover" />
-                    ) : (
-                      t.avatar
-                    )}
+                    <img
+                      src={t.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=0D8ABC&color=fff&size=80`}
+                      alt={t.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.onerror = null;
+                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=0D8ABC&color=fff&size=80`;
+                      }}
+                    />
                   </div>
                   <h4 className="font-semibold text-ocean-900">{t.name}</h4>
                   <p className="text-gray-400 text-sm">{t.country} • {t.tourPackage}</p>
