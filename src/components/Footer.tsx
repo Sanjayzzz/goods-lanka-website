@@ -8,7 +8,6 @@ const quickLinks = [
   { name: 'Home', href: '/' },
   { name: 'Destinations', href: '/destinations' },
   { name: 'Gallery', href: '/gallery' },
-  { name: 'Blog', href: '/blog' },
   { name: 'About Us', href: '/about' },
 ];
 

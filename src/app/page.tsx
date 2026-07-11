@@ -11,7 +11,6 @@ import DestinationModal from '@/components/DestinationModal';
 import TestimonialCarousel from '@/components/TestimonialCarousel';
 import StatsSection from '@/components/StatsSection';
 import { destinations, Destination } from '@/data/destinations';
-import { blogPosts } from '@/data/blog';
 import { createClient } from '@/lib/supabase';
 import {
   Shield, Award, Headphones, Heart, Camera, Mountain, Waves, TreePine, Binoculars, Compass,
@@ -74,41 +73,6 @@ function GalleryPreview() {
   );
 }
 
-function BlogPreview() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-50px' });
-  return (
-    <section className="py-20 sm:py-28 bg-ocean-50/50">
-      <div className="max-w-7xl mx-auto px-6">
-        <SectionHeading subtitle="Travel Blog" title="Stories from Sri Lanka" description="Travel tips, destination guides, and inspiring stories from our expert team." />
-        <motion.div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
-          {blogPosts.slice(0, 3).map((post, i) => (
-            <motion.div key={post.id} initial={{ opacity: 0, y: 30 }} animate={isInView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5, delay: i * 0.12 }}>
-              <Link href={`/blog/${post.slug}`} className="group block bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-400 hover:-translate-y-2">
-                <div className="relative h-48 overflow-hidden">
-                  <Image src={post.image} alt={post.title} fill className="object-cover transition-transform duration-500 group-hover:scale-110" sizes="(max-width: 640px) 100vw, 33vw" />
-                  <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-tropical-500 text-white text-xs font-semibold">{post.category}</div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-3 text-xs text-gray-400 mb-3">
-                    <span>{post.date}</span><span>•</span><span className="flex items-center gap-1"><Clock size={11} />{post.readTime}</span>
-                  </div>
-                  <h3 className="font-[var(--font-playfair)] text-lg font-bold text-ocean-900 mb-2 group-hover:text-tropical-600 transition-colors line-clamp-2">{post.title}</h3>
-                  <p className="text-gray-400 text-sm line-clamp-2">{post.excerpt}</p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
-        <div className="text-center">
-          <Link href="/blog" className="inline-flex items-center gap-2 px-8 py-4 border-2 border-ocean-700 text-ocean-700 font-semibold rounded-full hover:bg-ocean-700 hover:text-white transition-all duration-300 hover:scale-105">
-            Read All Articles <ArrowRight size={18} />
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function WhyUsSection() {
   const ref = useRef(null);
@@ -299,7 +263,6 @@ export default function HomePage() {
       <StatsSection />
       <TestimonialCarousel />
       <GalleryPreview />
-      <BlogPreview />
       <CTASection />
       <NewsletterSection />
 
