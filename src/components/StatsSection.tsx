@@ -7,7 +7,6 @@ import { Users, MapPin, Star, Calendar } from 'lucide-react';
 const stats = [
   { icon: Users, value: 15000, suffix: '+', label: 'Happy Tourists' },
   { icon: MapPin, value: 50, suffix: '+', label: 'Destinations' },
-  { icon: Star, value: 200, suffix: '+', label: 'Tour Packages' },
   { icon: Calendar, value: 12, suffix: '+', label: 'Years Experience' },
 ];
 
@@ -48,7 +47,7 @@ export default function StatsSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-ocean-900/50 to-transparent" />
 
       <div ref={ref} className="relative max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12">
           {stats.map((stat, i) => (
             <motion.div
               key={stat.label}
