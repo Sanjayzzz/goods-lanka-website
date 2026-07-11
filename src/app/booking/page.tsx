@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { destinations, Destination } from '@/data/destinations';
+import { countries } from '@/data/countries';
 import { createClient } from '@/lib/supabase';
 import { Check, ChevronRight, Calendar, Users, Clock, CreditCard, CheckCircle, MessageCircle } from 'lucide-react';
 
@@ -390,8 +391,17 @@ export default function BookingPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
-                          <input required type="text" value={form.country} onChange={e => setForm({ ...form, country: e.target.value })}
-                            placeholder="United Kingdom" className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm" />
+                          <select
+                            required
+                            value={form.country}
+                            onChange={e => setForm({ ...form, country: e.target.value })}
+                            className="w-full px-4 py-3.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-tropical-400 text-sm bg-white text-gray-800"
+                          >
+                            <option value="" disabled>Select your country</option>
+                            {countries.map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                       <div>
