@@ -93,16 +93,8 @@ export default function TestimonialCarousel() {
     }
   };
 
-    if (allTestimonials.length === 0) {
-    return (
-      <section ref={ref} className="py-20 sm:py-28 bg-gradient-to-b from-white to-ocean-50/50">
-        <div className="max-w-7xl mx-auto px-6 text-center py-12">
-          <p className="text-gray-500">No reviews yet.</p>
-        </div>
-      </section>
-    );
-  }
-  const t = allTestimonials[current];
+  // Let's render the full section shell even if there are no reviews, so users can still see the heading and click 'Write a Review'
+  const t = allTestimonials[current] || null;
 
   return (
     <section ref={ref} className="py-20 sm:py-28 bg-gradient-to-b from-white to-ocean-50/50">
@@ -146,58 +138,66 @@ export default function TestimonialCarousel() {
               <Quote size={18} className="text-white" />
             </div>
 
-            <div className="text-center">
-              {/* Stars */}
-              <div className="flex justify-center gap-1 mb-6">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={20} className={i < t.rating ? 'text-sunset-400 fill-sunset-400' : 'text-gray-200'} />
-                ))}
-              </div>
-
-              {/* Title */}
-              <h3 className="font-[var(--font-playfair)] text-xl sm:text-2xl font-bold text-ocean-900 mb-4">
-                &ldquo;{t.title}&rdquo;
-              </h3>
-
-              {/* Review */}
-              <p className="text-gray-500 text-base sm:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
-                {t.review}
-              </p>
-
-              {/* Author */}
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-ocean-500 to-tropical-500 flex items-center justify-center text-white font-bold text-lg mb-3 overflow-hidden border-2 border-ocean-100">
-                  {t.avatar_url ? (
-                    <img src={t.avatar_url} alt={t.name} className="w-full h-full object-cover" />
-                  ) : (
-                    t.avatar
-                  )}
+            {t ? (
+              <div className="text-center">
+                {/* Stars */}
+                <div className="flex justify-center gap-1 mb-6">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={20} className={i < t.rating ? 'text-sunset-400 fill-sunset-400' : 'text-gray-200'} />
+                  ))}
                 </div>
-                <h4 className="font-semibold text-ocean-900">{t.name}</h4>
-                <p className="text-gray-400 text-sm">{t.country} • {t.tourPackage}</p>
+
+                {/* Title */}
+                <h3 className="font-[var(--font-playfair)] text-xl sm:text-2xl font-bold text-ocean-900 mb-4">
+                  &ldquo;{t.title}&rdquo;
+                </h3>
+
+                {/* Review */}
+                <p className="text-gray-500 text-base sm:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
+                  {t.review}
+                </p>
+
+                {/* Author */}
+                <div className="flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-ocean-500 to-tropical-500 flex items-center justify-center text-white font-bold text-lg mb-3 overflow-hidden border-2 border-ocean-100">
+                    {t.avatar_url ? (
+                      <img src={t.avatar_url} alt={t.name} className="w-full h-full object-cover" />
+                    ) : (
+                      t.avatar
+                    )}
+                  </div>
+                  <h4 className="font-semibold text-ocean-900">{t.name}</h4>
+                  <p className="text-gray-400 text-sm">{t.country} • {t.tourPackage}</p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-10">
+                <p className="text-gray-500 text-lg">No reviews yet. Be the first to share your experience!</p>
+              </div>
+            )}
 
             {/* Navigation */}
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
-              <button onClick={prev} className="flex items-center gap-2 text-sm text-gray-400 hover:text-ocean-700 transition-colors group">
-                <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Previous
-              </button>
-              <div className="flex gap-2">
-                {allTestimonials.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrent(i)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                      i === current ? 'bg-tropical-500 w-8' : 'bg-gray-200 hover:bg-gray-300'
-                    }`}
-                  />
-                ))}
+            {allTestimonials.length > 1 && (
+              <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-100">
+                <button onClick={prev} className="flex items-center gap-2 text-sm text-gray-400 hover:text-ocean-700 transition-colors group">
+                  <ChevronLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Previous
+                </button>
+                <div className="flex gap-2">
+                  {allTestimonials.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrent(i)}
+                      className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                        i === current ? 'bg-tropical-500 w-8' : 'bg-gray-200 hover:bg-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <button onClick={next} className="flex items-center gap-2 text-sm text-gray-400 hover:text-ocean-700 transition-colors group">
+                  Next <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
-              <button onClick={next} className="flex items-center gap-2 text-sm text-gray-400 hover:text-ocean-700 transition-colors group">
-                Next <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-              </button>
-            </div>
+            )}
           </div>
         </motion.div>
       </div>
