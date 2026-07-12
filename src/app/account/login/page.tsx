@@ -24,7 +24,7 @@ export default function LoginPage() {
       setError(authError.message);
       setLoading(false);
     } else {
-      window.location.href = '/account/my-bookings';
+      window.location.href = '/';
     }
   };
 
@@ -35,7 +35,7 @@ export default function LoginPage() {
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/account/my-bookings`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/`,
       },
     });
     if (authError) {
