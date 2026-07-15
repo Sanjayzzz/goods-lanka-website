@@ -80,8 +80,6 @@ interface TravelerStory {
 }
 
 function TravelerStoriesSection() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-50px' });
   const [stories, setStories] = useState<TravelerStory[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -144,13 +142,14 @@ function TravelerStoriesSection() {
           title="Memories Captured by Our Guests" 
           description="A glimpse of real travel stories and adventures shared by our beloved guests." 
         />
-        <motion.div ref={ref} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {stories.slice(0, 8).map((story, i) => (
             <motion.div
               key={story.id}
               initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-30px' }}
+              transition={{ duration: 0.5, delay: i * 0.08 }}
               className="relative overflow-hidden rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
             >
               <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3">
@@ -167,7 +166,7 @@ function TravelerStoriesSection() {
               )}
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
