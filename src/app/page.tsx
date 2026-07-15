@@ -142,7 +142,7 @@ function TravelerStoriesSection() {
           title="Memories Captured by Our Guests" 
           description="A glimpse of real travel stories and adventures shared by our beloved guests." 
         />
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6 space-y-4 sm:space-y-6">
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6">
           {stories.slice(0, 12).map((story, i) => (
             <motion.div
               key={story.id}
@@ -150,7 +150,7 @@ function TravelerStoriesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-30px' }}
               transition={{ duration: 0.5, delay: i * 0.05 }}
-              className="break-inside-avoid inline-block w-full overflow-hidden rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
+              className="break-inside-avoid inline-block w-full h-fit mb-4 sm:mb-6 overflow-hidden rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
             >
               <div className="relative w-full rounded-2xl overflow-hidden">
                 <img 
