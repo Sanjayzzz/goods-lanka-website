@@ -142,24 +142,26 @@ function TravelerStoriesSection() {
           title="Memories Captured by Our Guests" 
           description="A glimpse of real travel stories and adventures shared by our beloved guests." 
         />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {stories.slice(0, 8).map((story, i) => (
+        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6 space-y-4 sm:space-y-6">
+          {stories.slice(0, 12).map((story, i) => (
             <motion.div
               key={story.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-30px' }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className="relative rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
+              transition={{ duration: 0.5, delay: i * 0.05 }}
+              className="break-inside-avoid inline-block w-full overflow-hidden rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
             >
-              <img 
-                src={story.image_url} 
-                alt={story.caption || 'Traveler Memory'} 
-                className="w-full h-auto rounded-2xl mb-3 block" 
-              />
+              <div className="relative w-full rounded-2xl overflow-hidden">
+                <img 
+                  src={story.image_url} 
+                  alt={story.caption || 'Traveler Memory'} 
+                  className="w-full h-auto object-cover rounded-2xl transition-transform duration-500 group-hover:scale-[1.02]" 
+                />
+              </div>
               {story.caption && (
-                <div className="px-2 pb-2 text-center">
-                  <p className="text-sm font-semibold text-ocean-900 truncate">{story.caption}</p>
+                <div className="px-2 pt-3 pb-2 text-center">
+                  <p className="text-sm font-semibold text-ocean-900 leading-normal">{story.caption}</p>
                 </div>
               )}
             </motion.div>
