@@ -73,6 +73,89 @@ function GalleryPreview() {
   );
 }
 
+interface TravelerStory {
+  id: string;
+  image_url: string;
+  caption: string | null;
+}
+
+function TravelerStoriesSection() {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-50px' });
+  const [stories, setStories] = useState<TravelerStory[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('traveler_stories')
+          .select('id, image_url, caption')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        setStories(data || []);
+      } catch (e) {
+        console.error('Error loading traveler stories:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStories();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-20 sm:py-28 bg-ocean-50/20 border-t border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="w-8 h-8 border-4 border-ocean-600 border-t-transparent rounded-full animate-spin mx-auto" />
+        </div>
+      </section>
+    );
+  }
+
+  // If there are no traveler stories uploaded, don't show the section yet
+  if (stories.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="py-20 sm:py-28 bg-ocean-50/20 border-t border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-6">
+        <SectionHeading 
+          subtitle="Traveler Stories" 
+          title="Memories Captured by Our Guests" 
+          description="A glimpse of real travel stories and adventures shared by our beloved guests." 
+        />
+        <motion.div ref={ref} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {stories.slice(0, 8).map((story, i) => (
+            <motion.div
+              key={story.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className="relative overflow-hidden rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
+            >
+              <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3">
+                <img 
+                  src={story.image_url} 
+                  alt={story.caption || 'Traveler Memory'} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                />
+              </div>
+              {story.caption && (
+                <div className="px-2 pb-2 text-center">
+                  <p className="text-sm font-semibold text-ocean-900 truncate">{story.caption}</p>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 
 function WhyUsSection() {
   const ref = useRef(null);
@@ -263,6 +346,7 @@ export default function HomePage() {
       <StatsSection />
       <TestimonialCarousel />
       <GalleryPreview />
+      <TravelerStoriesSection />
       <CTASection />
       <NewsletterSection />
 

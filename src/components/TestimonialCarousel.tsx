@@ -2,7 +2,7 @@
 
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import { useRef, useState, FormEvent, useEffect } from 'react';
-import { Star, ChevronLeft, ChevronRight, Quote, MessageSquarePlus, X, CheckCircle } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Quote, MessageSquarePlus, X, CheckCircle, Camera, Upload } from 'lucide-react';
 
 import { createClient } from '@/lib/supabase';
 
@@ -36,6 +36,7 @@ export default function TestimonialCarousel() {
       country: 'Verified Guest',
       avatar: r.author_name.substring(0, 2).toUpperCase(),
       avatar_url: r.avatar_url,
+      image_url: r.image_url,
       rating: r.rating,
       title: r.rating === 5 ? 'Excellent Experience' : 'Great Service',
       review: r.comment,
@@ -55,6 +56,8 @@ export default function TestimonialCarousel() {
   const [name, setName] = useState('');
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
+  const [reviewImage, setReviewImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
 
   const handleSubmitReview = async (e: FormEvent) => {
@@ -68,10 +71,30 @@ export default function TestimonialCarousel() {
     const { data: { user } } = await supabase.auth.getUser();
     const avatarUrl = user?.user_metadata?.avatar_url || null;
 
+    // Upload image if selected
+    let uploadedImageUrl = null;
+    if (reviewImage) {
+      const fileExt = reviewImage.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('reviews')
+        .upload(fileName, reviewImage);
+
+      if (uploadError) {
+        console.error('Error uploading review photo:', uploadError.message);
+      } else if (uploadData) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('reviews')
+          .getPublicUrl(fileName);
+        uploadedImageUrl = publicUrl;
+      }
+    }
+
     const { error } = await supabase.from('reviews').insert({
       package_slug: 'general',
       author_name: name,
       avatar_url: avatarUrl,
+      image_url: uploadedImageUrl,
       rating,
       comment
     });
@@ -85,6 +108,8 @@ export default function TestimonialCarousel() {
         setName('');
         setRating(5);
         setComment('');
+        setReviewImage(null);
+        setImagePreview(null);
         // Refresh reviews after submitting
         const supabase = createClient();
         supabase.from('reviews').select('*').eq('package_slug', 'general').order('created_at', { ascending: false })
@@ -159,6 +184,13 @@ export default function TestimonialCarousel() {
                 <p className="text-gray-500 text-base sm:text-lg leading-relaxed mb-8 max-w-2xl mx-auto">
                   {t.review}
                 </p>
+
+                {/* Review photo if available */}
+                {t.image_url && (
+                  <div className="relative max-w-md mx-auto h-48 sm:h-64 rounded-2xl overflow-hidden mb-8 border border-gray-100 shadow-sm">
+                    <img src={t.image_url} alt="Review attachment" className="w-full h-full object-cover" />
+                  </div>
+                )}
 
                 {/* Author */}
                 <div className="flex flex-col items-center">
@@ -272,6 +304,52 @@ export default function TestimonialCarousel() {
                         placeholder="Tell us about your experience..."
                       />
                     </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Add a Photo (Optional)</label>
+                      <div className="flex items-center gap-4">
+                        {imagePreview ? (
+                          <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200">
+                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setReviewImage(null);
+                                setImagePreview(null);
+                              }}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+                            >
+                              <X size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="flex flex-col items-center justify-center w-20 h-20 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-tropical-400 hover:bg-tropical-50/10 transition-colors">
+                            <Camera size={20} className="text-gray-400" />
+                            <span className="text-[10px] text-gray-400 font-medium mt-1">Upload</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0] || null;
+                                setReviewImage(file);
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    setImagePreview(reader.result as string);
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </label>
+                        )}
+                        <span className="text-xs text-gray-400 leading-normal">
+                          Share a memory from your tour!
+                        </span>
+                      </div>
+                    </div>
+
                     <button 
                       type="submit" disabled={isSubmitting}
                       className="w-full py-4 bg-gradient-to-r from-ocean-700 to-tropical-600 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 mt-4"

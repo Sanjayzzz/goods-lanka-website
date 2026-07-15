@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase';
 import {
   LayoutDashboard, CalendarCheck, MessageSquare, Package,
-  Users, LogOut, Menu, X, ChevronRight
+  Users, LogOut, Menu, X, ChevronRight, Image as ImageIcon
 } from 'lucide-react';
 
 const allNavItems = [
@@ -15,6 +15,7 @@ const allNavItems = [
   { href: '/admin/bookings', label: 'Bookings', icon: CalendarCheck, roles: ['super_admin', 'client_admin'] },
   { href: '/admin/enquiries', label: 'Enquiries', icon: MessageSquare, roles: ['super_admin', 'client_admin'] },
   { href: '/admin/packages', label: 'Destinations & Pricing', icon: Package, roles: ['super_admin', 'client_admin'] },
+  { href: '/admin/stories', label: 'Traveler Stories', icon: ImageIcon, roles: ['super_admin', 'client_admin'] },
   { href: '/admin/users', label: 'User Management', icon: Users, roles: ['super_admin'] },
 ];
 
