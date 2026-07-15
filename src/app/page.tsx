@@ -84,6 +84,7 @@ function TravelerStoriesSection() {
   const isInView = useInView(ref, { once: true, margin: '-50px' });
   const [stories, setStories] = useState<TravelerStory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStories = async () => {
@@ -93,10 +94,17 @@ function TravelerStoriesSection() {
           .from('traveler_stories')
           .select('id, image_url, caption')
           .order('created_at', { ascending: false });
-        if (error) throw error;
+        
+        console.log('[TravelerStories] data:', data, 'error:', error);
+        
+        if (error) {
+          setFetchError(error.message);
+          return;
+        }
         setStories(data || []);
-      } catch (e) {
+      } catch (e: any) {
         console.error('Error loading traveler stories:', e);
+        setFetchError(e?.message || 'Unknown error');
       } finally {
         setLoading(false);
       }
@@ -114,7 +122,16 @@ function TravelerStoriesSection() {
     );
   }
 
-  // If there are no traveler stories uploaded, don't show the section yet
+  if (fetchError) {
+    return (
+      <section className="py-10 bg-red-50 border-t border-b border-red-100">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-red-600 text-sm font-medium">Traveler Stories Error: {fetchError}</p>
+        </div>
+      </section>
+    );
+  }
+
   if (stories.length === 0) {
     return null;
   }
