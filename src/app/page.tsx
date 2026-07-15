@@ -342,11 +342,12 @@ export default function HomePage() {
         </div>
       </section>
 
+      <TravelerStoriesSection />
+
       <WhyUsSection />
       <StatsSection />
       <TestimonialCarousel />
       <GalleryPreview />
-      <TravelerStoriesSection />
       <CTASection />
       <NewsletterSection />
 
