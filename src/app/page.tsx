@@ -142,30 +142,38 @@ function TravelerStoriesSection() {
           title="Memories Captured by Our Guests" 
           description="A glimpse of real travel stories and adventures shared by our beloved guests." 
         />
-        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 sm:gap-6">
-          {stories.slice(0, 12).map((story, i) => (
+        <div className="columns-2 sm:columns-2 lg:columns-3 xl:columns-4 gap-3 sm:gap-6">
+          {stories.slice(0, 6).map((story, i) => (
             <motion.div
               key={story.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-30px' }}
               transition={{ duration: 0.5, delay: i * 0.05 }}
-              className="break-inside-avoid inline-block w-full h-fit mb-4 sm:mb-6 overflow-hidden rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
+              className="break-inside-avoid inline-block w-full h-fit mb-3 sm:mb-6 overflow-hidden rounded-2xl sm:rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-1.5 sm:p-2 hover:shadow-lg transition-all duration-300"
             >
-              <div className="relative w-full rounded-2xl overflow-hidden">
+              <div className="relative w-full rounded-xl sm:rounded-2xl overflow-hidden">
                 <img 
                   src={story.image_url} 
                   alt={story.caption || 'Traveler Memory'} 
-                  className="w-full h-auto object-cover rounded-2xl transition-transform duration-500 group-hover:scale-[1.02]" 
+                  className="w-full h-auto object-cover rounded-xl sm:rounded-2xl transition-transform duration-500 group-hover:scale-[1.02]" 
                 />
               </div>
               {story.caption && (
-                <div className="px-2 pt-3 pb-2 text-center">
-                  <p className="text-sm font-semibold text-ocean-900 leading-normal">{story.caption}</p>
+                <div className="px-1.5 sm:px-2 pt-2 pb-1.5 sm:pb-2 text-center">
+                  <p className="text-xs sm:text-sm font-semibold text-ocean-900 leading-normal">{story.caption}</p>
                 </div>
               )}
             </motion.div>
           ))}
+        </div>
+        <div className="text-center mt-10">
+          <Link
+            href="/traveler-stories"
+            className="inline-flex items-center gap-2 px-8 py-4 border-2 border-ocean-700 text-ocean-700 font-semibold rounded-full hover:bg-ocean-700 hover:text-white transition-all duration-300 hover:scale-105"
+          >
+            View All Memories <ArrowRight size={18} />
+          </Link>
         </div>
       </div>
     </section>
