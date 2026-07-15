@@ -152,11 +152,11 @@ function TravelerStoriesSection() {
               transition={{ duration: 0.5, delay: i * 0.08 }}
               className="relative overflow-hidden rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
             >
-              <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3">
+              <div className="relative w-full rounded-2xl overflow-hidden mb-3 bg-gray-50 flex items-center justify-center">
                 <img 
                   src={story.image_url} 
                   alt={story.caption || 'Traveler Memory'} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  className="w-full h-auto object-contain rounded-2xl" 
                 />
               </div>
               {story.caption && (
