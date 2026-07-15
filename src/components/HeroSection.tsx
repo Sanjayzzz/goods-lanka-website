@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Search, Calendar, Users, ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 const heroSlides = [
   {
@@ -93,7 +93,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-r from-ocean-950/40 to-transparent" />
 
       {/* Content */}
-      <div className="relative h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 pt-20 pb-44 sm:pb-40">
+      <div className="relative h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 pt-20 pb-20 sm:pb-20">
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
@@ -131,49 +131,6 @@ export default function HeroSection() {
             </div>
           </motion.div>
         </AnimatePresence>
-
-        {/* Search Bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="absolute bottom-12 sm:bottom-16 left-4 right-4 sm:left-auto sm:right-auto w-full max-w-4xl mx-auto"
-        >
-          <div className="glass rounded-2xl sm:rounded-full p-2 sm:p-3">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-0">
-              <div className="flex-1 flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-0 rounded-xl sm:rounded-none sm:border-r border-white/20 bg-white/5 sm:bg-transparent">
-                <Search size={18} className="text-white/60 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Where do you want to go?"
-                  className="bg-transparent text-white placeholder-white/50 text-sm w-full focus:outline-none"
-                />
-              </div>
-              <div className="flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-0 rounded-xl sm:rounded-none sm:border-r border-white/20 bg-white/5 sm:bg-transparent">
-                <Calendar size={18} className="text-white/60 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="When?"
-                  className="bg-transparent text-white placeholder-white/50 text-sm w-full focus:outline-none"
-                />
-              </div>
-              <div className="flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-0 rounded-xl sm:rounded-none bg-white/5 sm:bg-transparent">
-                <Users size={18} className="text-white/60 shrink-0" />
-                <select className="bg-transparent text-white/50 text-sm w-full focus:outline-none appearance-none cursor-pointer">
-                  <option value="">Guests</option>
-                  <option value="1">1 Guest</option>
-                  <option value="2">2 Guests</option>
-                  <option value="4">4 Guests</option>
-                  <option value="6">6+ Guests</option>
-                </select>
-                <ChevronDown size={14} className="text-white/40" />
-              </div>
-              <button className="px-6 sm:px-8 py-3.5 bg-gradient-to-r from-sunset-500 to-coral-500 text-white font-semibold rounded-xl sm:rounded-full hover:shadow-lg hover:shadow-sunset-500/30 transition-all text-sm whitespace-nowrap">
-                Search
-              </button>
-            </div>
-          </div>
-        </motion.div>
 
         {/* Slide indicators */}
         <div className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-10">
