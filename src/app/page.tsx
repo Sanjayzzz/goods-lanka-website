@@ -150,15 +150,13 @@ function TravelerStoriesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-30px' }}
               transition={{ duration: 0.5, delay: i * 0.08 }}
-              className="relative overflow-hidden rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
+              className="relative rounded-3xl group shadow-sm bg-white border border-gray-150/80 p-2 hover:shadow-lg transition-all duration-300"
             >
-              <div className="relative w-full rounded-2xl overflow-hidden mb-3 bg-gray-50 flex items-center justify-center">
-                <img 
-                  src={story.image_url} 
-                  alt={story.caption || 'Traveler Memory'} 
-                  className="w-full h-auto object-contain rounded-2xl" 
-                />
-              </div>
+              <img 
+                src={story.image_url} 
+                alt={story.caption || 'Traveler Memory'} 
+                className="w-full h-auto rounded-2xl mb-3 block" 
+              />
               {story.caption && (
                 <div className="px-2 pb-2 text-center">
                   <p className="text-sm font-semibold text-ocean-900 truncate">{story.caption}</p>
